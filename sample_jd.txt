@@ -1,0 +1,21 @@
+Our client is looking for a passionate Full Stack Developer with Generative AI exposure to join their growing engineering team. The ideal candidate should have strong fundamentals in full-stack development along with basic understanding of Generative AI, LLMs, and modern AI-driven application development. This role involves building scalable web applications, integrating AI capabilities such as chatbots or intelligent features, and working across both frontend and backend systems. Candidates with hands-on projects in full-stack development and AI/ML domains will be highly preferred.
+
+Must-Have Skills
+• Strong knowledge of JavaScript (ES6+) and/or Python
+• Hands-on experience with React.js / Next.js
+• Basic understanding of Node.js / Express.js or FastAPI / Flask
+• Knowledge of REST APIs and backend integration
+• Understanding of MongoDB / SQL databases
+• Basic understanding of Generative AI / LLMs
+• Familiarity with Git/GitHub and version control
+• Strong problem-solving and coding skills
+
+Preferred Skills
+• Exposure to LLMs (OpenAI, Gemini, etc.)
+• Understanding of RAG (Retrieval-Augmented Generation)
+• Experience with LangChain / LangGraph or similar frameworks
+• Familiarity with Vector Databases (FAISS, Pinecone, etc.)
+• Knowledge of prompt engineering techniques
+• Basic knowledge of Docker and deployment
+• Exposure to cloud platforms (AWS / GCP / Azure)
+• Experience building chatbots or AI-based applications
