@@ -21,14 +21,59 @@
     --muted: #f1f5f9;
     --muted-foreground: #64748b;
     
-    --border: #e2e8f0;
+    --border: #cbd5e1;
     --input: #f8fafc;
     --ring: #94a3b8;
+
+    --sidebar-bg: #ffffff;
+    --card-bg: #ffffff;
+    --active-pill-bg: #f8fafc;
+    --active-pill-text: #0f172a;
+    --active-pill-border: #cbd5e1;
+  }
+
+  .dark {
+    /* Vibrant Dark Theme */
+    --background: #09090b; /* Very deep polished black */
+    --background-alt: #18181b;
+    --foreground: #f8fafc;
+    
+    /* Use sky blue instead of plain white for primary interactions */
+    --primary: #0ea5e9;
+    --primary-foreground: #ffffff;
+    
+    /* Slightly tinted dark elements */
+    --secondary: #27272a;
+    --secondary-foreground: #f8fafc;
+    
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    
+    --border: #27272a;
+    --input: #18181b;
+    --ring: #0ea5e9;
+    --accent: #1e293b;
+    --accent-foreground: #f8fafc;
+
+    --sidebar-bg: #09090b; /* Match body for seamless look */
+    --card-bg: rgba(24, 24, 27, 0.4); /* Slight transparency to let gradients bleed through */
+    --active-pill-bg: rgba(14, 165, 233, 0.1); /* Sky blue tint for active elements */
+    --active-pill-text: #38bdf8;
+    --active-pill-border: rgba(56, 189, 248, 0.2);
   }
 
   body {
     @apply bg-background text-foreground antialiased min-h-screen font-sans;
-    background-color: #fafafa;
+    background-color: var(--background);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Add subtle glowing gradient orbs in the background for dark mode */
+  .dark body {
+    background-image: radial-gradient(circle at top right, rgba(14, 165, 233, 0.08) 0%, transparent 40%),
+                      radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.06) 0%, transparent 40%);
+    background-attachment: fixed;
+    background-color: var(--background);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -39,17 +84,18 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white/60 backdrop-blur-md border border-slate-200/50 shadow-lg;
+    @apply bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-lg;
   }
   .glass-dark {
-    @apply bg-white/95 backdrop-blur-2xl border border-slate-200 shadow-[0_8px_30px_rgb(0,0,0,0.08)];
+    @apply bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.08)];
   }
 
   .bg-background { background-color: var(--background); }
+  .bg-background-alt { background-color: var(--background-alt); }
+  .bg-sidebar { background-color: var(--sidebar-bg); }
+  .bg-card { background-color: var(--card-bg); }
+  .bg-input { background-color: var(--input); }
   .text-foreground { color: var(--foreground); }
-  .bg-primary { background-color: var(--primary); }
-  .text-primary { color: var(--primary); }
-  .text-primary-foreground { color: var(--primary-foreground); }
-  .border-primary { border-color: var(--primary); }
+  .border-theme { border-color: var(--border); }
   .text-muted-foreground { color: var(--muted-foreground); }
 }

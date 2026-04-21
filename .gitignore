@@ -19,5 +19,7 @@ Thumbs.db
 backend/chroma_db/
 backend/sessions/
 backend/uploads/
+backend/resumes/
+backend/users/
 __pycache__/
 *.pyc

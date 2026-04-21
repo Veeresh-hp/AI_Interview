@@ -71,7 +71,7 @@ export default function InterviewSetup() {
                   (mode === 'Resume + JD' && file && jd);
 
   return (
-    <div className="h-screen flex overflow-hidden text-slate-900 bg-[#fafafa]">
+    <div className="h-screen flex overflow-hidden text-foreground bg-background">
       <Sidebar />
       
       <main className="flex-1 overflow-y-auto">
@@ -79,15 +79,15 @@ export default function InterviewSetup() {
           <div className="h-24 flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold tracking-tight">Configure Interview</h1>
             
-            <div className="flex items-center gap-4 bg-white p-2 px-4 rounded-2xl border border-slate-200 shadow-sm">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">No. of Questions:</span>
+            <div className="flex items-center gap-4 bg-card p-2 px-4 rounded-2xl border border-slate-200 dark:border-[#444444] shadow-sm">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">No. of Questions:</span>
                 <select 
                   value={questionsCount}
                   onChange={(e) => setQuestionsCount(parseInt(e.target.value))}
-                  className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-sm font-bold outline-none focus:border-[#0ea5e9]"
+                  className="bg-background-alt border border-slate-200 dark:border-[#444444] rounded-lg px-2 py-1 text-sm font-bold outline-none focus:border-[#0ea5e9] text-foreground"
                 >
                   {[3,4,5,6,7,8,9,10].map(n => (
-                    <option key={n} value={n}>{n}</option>
+                    <option key={n} value={n} className="bg-card">{n}</option>
                   ))}
                 </select>
             </div>
@@ -95,8 +95,8 @@ export default function InterviewSetup() {
 
           <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
-              <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-2xl">
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="bg-[#e0f2fe] text-[#0284c7] w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs">1</span> Interview Mode</h2>
+              <section className="p-6 bg-card border border-slate-200 dark:border-zinc-800 shadow-sm rounded-2xl">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="bg-[#e0f2fe] dark:bg-slate-800 text-[#0284c7] w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs">1</span> Interview Mode</h2>
                 <div className="flex gap-2">
                     {['Resume', 'JD', 'Both'].map(m => {
                       const label = m === 'Both' ? 'Resume + JD' : m + ' Only';
@@ -104,7 +104,7 @@ export default function InterviewSetup() {
                         <button 
                           key={m} 
                           onClick={() => setMode(label)}
-                          className={`flex-1 py-3 rounded-xl border-2 transition-all font-bold text-xs ${mode === label ? 'border-[#0ea5e9] bg-[#f0f9ff] text-[#0284c7]' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                          className={`flex-1 py-3 rounded-xl border-2 transition-all font-bold text-xs ${mode === label ? 'border-[#0ea5e9] bg-[var(--active-pill-bg)] text-[var(--active-pill-text)]' : 'border-slate-100 dark:border-[#444444] text-muted-foreground hover:border-slate-200 dark:hover:border-[#555555]'}`}
                         >
                           {m}
                         </button>
@@ -113,14 +113,14 @@ export default function InterviewSetup() {
                 </div>
               </section>
 
-              <section className="p-6 bg-white border border-slate-200 shadow-sm rounded-2xl">
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="bg-[#e0f2fe] text-[#0284c7] w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs">2</span> Select Difficulty</h2>
+              <section className="p-6 bg-card border border-slate-200 dark:border-zinc-800 shadow-sm rounded-2xl">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><span className="bg-[#e0f2fe] dark:bg-slate-800 text-[#0284c7] w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs">2</span> Select Difficulty</h2>
                 <div className="flex gap-2">
                     {['Easy', 'Medium', 'Hard'].map(d => (
                       <button 
                         key={d} 
                         onClick={() => setDifficulty(d)}
-                        className={`flex-1 py-3 rounded-xl border-2 transition-all font-bold text-xs ${difficulty === d ? 'border-[#0ea5e9] bg-[#f0f9ff] text-[#0284c7]' : 'border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                        className={`flex-1 py-3 rounded-xl border-2 transition-all font-bold text-xs ${difficulty === d ? 'border-[#0ea5e9] bg-[var(--active-pill-bg)] text-[var(--active-pill-text)]' : 'border-slate-100 dark:border-[#444444] text-muted-foreground hover:border-slate-200 dark:hover:border-[#555555]'}`}
                       >
                         {d}
                       </button>
@@ -130,21 +130,21 @@ export default function InterviewSetup() {
             </div>
 
             <section className="grid md:grid-cols-2 gap-6">
-              <div className={`p-6 bg-white border border-slate-200 shadow-sm rounded-2xl transition-all duration-300 ${mode.includes('Resume') ? 'opacity-100 transform-none' : 'opacity-40 scale-95 pointer-events-none'}`}>
+              <div className={`p-6 bg-card border border-slate-200 dark:border-[#444444] shadow-sm rounded-2xl transition-all duration-300 ${mode.includes('Resume') ? 'opacity-100 transform-none' : 'opacity-40 scale-95 pointer-events-none'}`}>
                 <h2 className="text-lg font-bold mb-4">Upload Resume (PDF)</h2>
-                <label className="border-2 border-dashed border-slate-200 bg-slate-50 rounded-xl flex flex-col items-center justify-center p-8 cursor-pointer hover:border-[#0ea5e9] transition-colors group">
+                <label className="border-2 border-dashed border-slate-200 dark:border-slate-800 bg-background-alt rounded-xl flex flex-col items-center justify-center p-8 cursor-pointer hover:border-[#0ea5e9] transition-colors group">
                   <input type="file" className="hidden" accept=".pdf,.txt" onChange={(e) => setFile(e.target.files[0])} />
-                  <div className="w-12 h-12 bg-white shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:bg-[#e0f2fe] transition-colors">📄</div>
+                  <div className="w-12 h-12 bg-card shadow-sm rounded-full flex items-center justify-center mb-3 group-hover:bg-[#e0f2fe] dark:group-hover:bg-slate-800 transition-colors">📄</div>
                   {file ? <span className="text-xs font-semibold text-[#0ea5e9] max-w-full truncate">{file.name}</span> : <span className="text-xs text-slate-400 font-semibold text-center italic">Click to upload <br/> Resume PDF</span>}
                 </label>
               </div>
 
-              <div className={`p-6 bg-white border border-slate-200 shadow-sm rounded-2xl transition-all duration-300 ${mode.includes('JD') ? 'opacity-100 transform-none' : 'opacity-40 scale-95 pointer-events-none'}`}>
+              <div className={`p-6 bg-card border border-slate-200 dark:border-[#444444] shadow-sm rounded-2xl transition-all duration-300 ${mode.includes('JD') ? 'opacity-100 transform-none' : 'opacity-40 scale-95 pointer-events-none'}`}>
                 <h2 className="text-lg font-bold mb-4">Job Description</h2>
                 <textarea 
                   value={jd} 
                   onChange={(e) => setJd(e.target.value)}
-                  className="w-full h-36 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] transition-all p-4 resize-none text-[13px] placeholder:text-slate-400"
+                  className="w-full h-36 bg-background-alt border border-slate-200 dark:border-[#444444] rounded-xl outline-none focus:border-[#0ea5e9] focus:ring-1 focus:ring-[#0ea5e9] transition-all p-4 resize-none text-[13px] placeholder:text-slate-400 text-foreground"
                   placeholder="Paste the target job description here..." 
                 />
               </div>
@@ -154,11 +154,11 @@ export default function InterviewSetup() {
                 <button 
                   disabled={!isReady || isUploading}
                   onClick={handleStart}
-                  className="w-full py-4 text-center bg-[#111] text-white text-lg font-bold rounded-2xl hover:bg-black transition-all disabled:opacity-50 disabled:hover:bg-[#111] shadow-lg flex items-center justify-center gap-3"
+                  className="w-full py-4 text-center bg-[var(--primary)] text-[var(--primary-foreground)] text-lg font-bold rounded-2xl hover:opacity-90 transition-all disabled:opacity-50 shadow-lg flex items-center justify-center gap-3"
                 >
                   {isUploading ? (
                     <>
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                       Processing...
                     </>
                   ) : 'Start AI Mock Interview'}

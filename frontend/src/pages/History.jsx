@@ -25,7 +25,7 @@ export default function History() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden text-slate-900 bg-[#fafafa]">
+    <div className="h-screen flex overflow-hidden text-foreground bg-background">
       <Sidebar />
       
       <main className="flex-1 overflow-y-auto">
@@ -41,16 +41,16 @@ export default function History() {
           ) : (
             <div className="grid gap-6">
               {interviews.length === 0 ? (
-                <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
+                <div className="p-12 text-center bg-card rounded-2xl border border-slate-200 dark:border-[#444444]">
                   <p className="text-slate-500 font-medium">No interview history found yet. Start your first practice session!</p>
                 </div>
               ) : (
                 interviews.map((interview) => (
-                  <div key={interview._id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-[#0ea5e9] transition-all group">
+                  <div key={interview._id} className="p-6 rounded-2xl border border-slate-200 dark:border-[#444444] bg-card shadow-sm group hover:scale-[1.01] transition-all hover:bg-slate-100 dark:hover:bg-[#2a2a2a]">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="text-lg font-bold">Technical Interview - {interview.difficulty}</h3>
-                        <p className="text-sm text-slate-500 mt-1">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">
                           {new Date(interview.createdAt).toLocaleDateString('en-US', { 
                             month: 'long', 
                             day: 'numeric', 
@@ -63,24 +63,24 @@ export default function History() {
                         </p>
                       </div>
                       <div className={`px-4 py-2 rounded-xl text-lg font-bold ${
-                        interview.score >= 70 ? 'bg-green-50 text-green-600' : 
-                        interview.score >= 50 ? 'bg-amber-50 text-amber-600' : 
-                        'bg-red-50 text-red-600'
+                        interview.score >= 70 ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 
+                        interview.score >= 50 ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400' : 
+                        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
                       }`}>
                         {interview.score}%
                       </div>
                     </div>
                     
                     <div className="mb-4">
-                      <p className="text-sm text-slate-600 line-clamp-2 italic">
+                      <p className="text-sm text-foreground/70 line-clamp-2 italic">
                         "{interview.generalFeedback}"
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-zinc-800">
                       <div className="flex gap-4">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{interview.qna.length} Questions</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{interview.mode || 'Standard'}</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{interview.qna.length} Questions</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{interview.mode || 'Standard'}</span>
                       </div>
                       <button 
                         onClick={() => viewReport(interview._id)}

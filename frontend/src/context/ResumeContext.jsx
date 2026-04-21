@@ -1,13 +1,5 @@
-import { createContext, useContext, useState, useCallback } from 'react';
-
-const ResumeContext = createContext();
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useResume = () => {
-    const context = useContext(ResumeContext);
-    if (!context) throw new Error('useResume must be used within a ResumeProvider');
-    return context;
-};
+import { useState, useCallback } from 'react';
+import { ResumeContext } from './ResumeContextDef';
 
 export const ResumeProvider = ({ children }) => {
     const [template, setTemplate] = useState(null);
@@ -35,7 +27,7 @@ export const ResumeProvider = ({ children }) => {
     const saveResumeData = useCallback(async (status = 'draft') => {
         setSaveStatus('Saving...');
         try {
-            const response = await fetch('http://127.0.0.1:5000/api/resumes', {
+            const response = await fetch('http://localhost:8000/api/resumes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

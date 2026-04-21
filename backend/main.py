@@ -4,6 +4,7 @@ os.environ["USE_TF"] = "0"
 import uuid
 import json
 import shutil
+import hashlib
 from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -29,6 +30,10 @@ UPLOADS_DIR = "uploads"
 SESSIONS_DIR = "sessions"
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 os.makedirs(SESSIONS_DIR, exist_ok=True)
+RESUMES_DIR = "resumes"
+os.makedirs(RESUMES_DIR, exist_ok=True)
+USERS_DIR = "users"
+os.makedirs(USERS_DIR, exist_ok=True)
 
 engine = QuestionEngine()
 
@@ -204,6 +209,83 @@ async def get_history():
     # Sort descending by date
     sessions.sort(key=lambda x: x["createdAt"], reverse=True)
     return sessions
+
+@app.post("/api/resumes")
+async def save_resume(resume_data: dict):
+    # Using dict to avoid strict Pydantic validation if frontend schema varies slightly
+    resume_id = str(uuid.uuid4())
+    resume_path = os.path.join(RESUMES_DIR, f"{resume_id}.json")
+    
+    resume_data["_id"] = resume_id
+    resume_data["updatedAt"] = datetime.now().isoformat()
+    
+    with open(resume_path, "w") as f:
+        json.dump(resume_data, f)
+    
+    return {"status": "saved", "id": resume_id}
+
+@app.get("/api/resumes")
+async def list_resumes():
+    resumes = []
+    resume_files = glob.glob(os.path.join(RESUMES_DIR, "*.json"))
+    for rf in resume_files:
+        try:
+            with open(rf, "r") as f:
+                resumes.append(json.load(f))
+        except:
+            continue
+    resumes.sort(key=lambda x: x.get("updatedAt", ""), reverse=True)
+    return resumes
+
+@app.delete("/api/resumes/{resume_id}")
+async def delete_resume(resume_id: str):
+    resume_path = os.path.join(RESUMES_DIR, f"{resume_id}.json")
+    if os.path.exists(resume_path):
+        os.remove(resume_path)
+        return {"status": "deleted"}
+    raise HTTPException(status_code=404, detail="Resume not found")
+
+# --- AUTH ENDPOINTS ---
+def hash_password(password: str):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+@app.post("/api/auth/register")
+async def register(user_data: dict):
+    email = user_data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    user_file = os.path.join(USERS_DIR, f"{email}.json")
+    if os.path.exists(user_file):
+        raise HTTPException(status_code=400, detail="User already exists")
+    
+    user_data["password"] = hash_password(user_data["password"])
+    user_data["createdAt"] = datetime.now().isoformat()
+    
+    with open(user_file, "w") as f:
+        json.dump(user_data, f)
+        
+    # Don't return password
+    del user_data["password"]
+    return user_data
+
+@app.post("/api/auth/login")
+async def login(credentials: dict):
+    email = credentials.get("email")
+    password = credentials.get("password")
+    
+    user_file = os.path.join(USERS_DIR, f"{email}.json")
+    if not os.path.exists(user_file):
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    with open(user_file, "r") as f:
+        user_data = json.load(f)
+        
+    if user_data["password"] != hash_password(password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    del user_data["password"]
+    return user_data
 
 if __name__ == "__main__":
     import uvicorn
