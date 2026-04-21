@@ -7,46 +7,23 @@ export default function InterviewExperience() {
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answer, setAnswer] = useState('');
-  const [userAnswers, setUserAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState(90);
   const navigate = useNavigate();
   const location = useLocation();
+  const API = 'http://localhost:8000';
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const { mode, difficulty, jobDescription, resumeText, questionsCount } = location.state || {};
-        
-        if (!mode && !jobDescription && !resumeText) {
-          // Fallback or redirect if no context
-          console.warn("No context found, using defaults");
-        }
-
-        const res = await axios.post('http://127.0.0.1:5000/api/ai/generate-questions', {
-          mode: mode || "General",
-          difficulty: difficulty || "Medium",
-          questionsCount: questionsCount || 3,
-          jobDescription,
-          resumeText
-        });
-
-
-        if (res.data.questions && Array.isArray(res.data.questions)) {
-          setQuestions(res.data.questions);
-        } else {
-          throw new Error("Invalid questions format received");
-        }
-      } catch (error) {
-        console.error("Fetch Questions Error:", error);
-        alert("Failed to generate AI questions. Please ensure the backend is running.");
-        navigate('/interview');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchQuestions();
+    const { firstQuestion, timeLimit } = location.state || {};
+    
+    if (firstQuestion) {
+      setQuestions([firstQuestion]);
+      setTimeLeft(timeLimit || 90);
+      setLoading(false);
+    } else {
+      alert("No question data found. Please restart the interview.");
+      navigate('/interview');
+    }
   }, [location.state, navigate]);
 
   // Timer logic
@@ -60,27 +37,41 @@ export default function InterviewExperience() {
     return () => clearInterval(timer);
   }, [loading, timeLeft]);
 
-  const handleNext = useCallback(() => {
-    const currentQnA = { question: questions[currentIdx], answer: answer };
-    const updatedAnswers = [...userAnswers, currentQnA];
-    
-    setAnswer('');
-    setTimeLeft(90); // Reset timer for next question
-    
-    if (currentIdx < questions.length - 1) {
-      setUserAnswers(updatedAnswers);
-      setCurrentIdx(currentIdx + 1);
-    } else {
-      // Pass the final results to the results page
-      navigate('/interview/results', { 
-        state: { 
-          qna: updatedAnswers,
-          difficulty: location.state?.difficulty || "Medium",
-          mode: location.state?.mode || "Resume + JD"
-        } 
-      }); 
+  const handleNext = useCallback(async () => {
+    setLoading(true);
+    const { sessionId } = location.state || {};
+
+    try {
+      // 1. Submit answer and get next step
+      const res = await axios.post(`${API}/answer`, {
+        session_id: sessionId,
+        answer: answer
+      });
+
+      if (res.data.status === 'completed') {
+        // 2. If finished, go to results
+        navigate('/interview/results', { 
+          state: { 
+            sessionId,
+            difficulty: location.state?.difficulty || "Medium",
+            mode: location.state?.mode || "Resume + JD"
+          } 
+        });
+      } else {
+        // 3. Otherwise, append next question
+        const nextQ = res.data.question;
+        setQuestions(prev => [...prev, nextQ]);
+        setCurrentIdx(prev => prev + 1);
+        setAnswer('');
+        setTimeLeft(location.state?.timeLimit || 90);
+      }
+    } catch (error) {
+      console.error("Submit Answer Error:", error);
+      alert(`Failed to submit answer: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setLoading(false);
     }
-  }, [currentIdx, questions, answer, userAnswers, navigate, location.state]);
+  }, [answer, location.state, navigate]);
   
   // Auto-advance when time hits zero
   useEffect(() => {
@@ -116,7 +107,7 @@ export default function InterviewExperience() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 LEAVE INTERVIEW
               </button>
-              <span className="text-slate-400">Question {currentIdx + 1} of {Math.max(questions.length, 1)}</span>
+              <span className="text-slate-400">Question {currentIdx + 1} of {location.state?.totalQuestions || Math.max(questions.length, 1)}</span>
             </div>
             
             <div className="flex items-center gap-6">
@@ -172,7 +163,7 @@ export default function InterviewExperience() {
                disabled={loading || answer.length < 5}
                className="bg-[#111] text-white px-10 py-5 rounded-2xl text-lg font-bold hover:bg-black transition-all disabled:opacity-50 shadow-md"
              >
-               {currentIdx === questions.length - 1 ? 'Finish Interview' : 'Next Question'}
+               {currentIdx === (location.state?.totalQuestions || 1) - 1 ? 'Finish Interview' : 'Next Question'}
              </button>
           </div>
       </div>

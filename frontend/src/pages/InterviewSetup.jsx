@@ -14,33 +14,53 @@ export default function InterviewSetup() {
   
   const navigate = useNavigate();
 
+  const API = 'http://localhost:8000';
+
   const handleStart = async () => {
     setIsUploading(true);
-    let extractedText = "";
 
     try {
-      if (file && mode.includes('Resume')) {
-        const formData = new FormData();
-        formData.append('resume', file);
-        
-        const res = await axios.post('http://127.0.0.1:5000/api/upload/resume', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        extractedText = res.data.extractedText;
+      // 1. Prepare FormData
+      const formData = new FormData();
+      const backendMode = mode === 'Resume Only' ? 'resume' : mode === 'JD Only' ? 'jd' : 'both';
+      formData.append('mode', backendMode);
+      formData.append('difficulty', difficulty.toLowerCase());
+      formData.append('max_questions', questionsCount);
+      
+      if (file) formData.append('resume', file);
+      if (jd) {
+        // Create a temporary blob if it's text, or if it's already a file object
+        if (typeof jd === 'string') {
+          const blob = new Blob([jd], { type: 'text/plain' });
+          formData.append('jd', blob, 'jd.txt');
+        } else {
+          formData.append('jd', jd);
+        }
       }
 
+      // 2. Upload and Ingest
+      const uploadRes = await axios.post(`${API}/upload`, formData);
+      const sessionId = uploadRes.data.session_id;
+
+      // 3. Start Interview
+      const startRes = await axios.post(`${API}/start?session_id=${sessionId}&difficulty=${difficulty.toLowerCase()}`);
+      
+      const { question, total_questions, time_limit } = startRes.data;
+
+      // 4. Navigate to Experience page with all data
       navigate('/interview/start', { 
         state: { 
+          sessionId,
+          firstQuestion: question,
+          totalQuestions: total_questions,
+          timeLimit: time_limit,
           mode, 
-          difficulty, 
-          questionsCount,
-          jobDescription: jd, 
-          resumeText: extractedText 
+          difficulty
         } 
       });
     } catch (error) {
       console.error("Setup Error:", error);
-      alert(`Failed to process interview setup: ${error.message}`);
+      alert(`Failed to process interview setup: ${error.response?.data?.detail || error.message}`);
     } finally {
       setIsUploading(false);
     }

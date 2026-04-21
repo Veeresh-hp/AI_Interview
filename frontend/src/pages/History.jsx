@@ -8,7 +8,7 @@ export default function History() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/api/interviews')
+    fetch('http://localhost:8000/history')
       .then(res => res.json())
       .then(data => {
         setInterviews(data);
@@ -21,7 +21,7 @@ export default function History() {
   }, []);
 
   const viewReport = (id) => {
-    navigate('/interview/results', { state: { interviewId: id } });
+    navigate('/interview/results', { state: { sessionId: id } });
   };
 
   return (

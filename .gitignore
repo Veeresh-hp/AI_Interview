@@ -14,3 +14,10 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Backend Storage
+backend/chroma_db/
+backend/sessions/
+backend/uploads/
+__pycache__/
+*.pyc

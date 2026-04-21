@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,41 +8,37 @@ export default function InterviewResults() {
   const [results, setResults] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const hasRequested = useRef(false);
+
+  const API = 'http://localhost:8000';
 
   useEffect(() => {
-    const { qna, difficulty, mode, interviewId } = location.state || {};
+    const { sessionId } = location.state || {};
 
     const fetchResult = async () => {
       try {
-        if (interviewId) {
-          // View Report Mode - Fetch existing result
-          const res = await axios.get(`http://127.0.0.1:5000/api/interviews/${interviewId}`);
+        if (sessionId) {
+          const res = await axios.get(`${API}/report?session_id=${sessionId}`);
           const data = res.data;
-          setResults({
-            totalScore: data.score,
-            generalFeedback: data.generalFeedback,
-            evaluations: data.qna.map(item => ({ feedback: item.feedback, score: item.score })),
-            qna: data.qna // Pass qna for display
-          });
-        } else if (qna && qna.length > 0) {
-          // New Interview Mode - Evaluate
-          if (hasRequested.current) return;
-          hasRequested.current = true;
           
-          const res = await axios.post('http://127.0.0.1:5000/api/ai/evaluate-answers', {
-            qna,
-            difficulty: difficulty || "Medium",
-            mode: mode || "Resume + JD"
+          setResults({
+            totalScore: data.overall_score * 10, // Convert 10-scale to 100-scale
+            generalFeedback: data.summary,
+            evaluations: data.breakdown.map(item => ({ feedback: item.feedback, score: item.score })),
+            qna: data.breakdown.map(item => ({ 
+              question: item.question, 
+              answer: item.answer 
+            })),
+            pros: data.pros,
+            cons: data.cons,
+            verdict: data.verdict
           });
-          setResults({ ...res.data, qna });
         } else {
-          console.error("No interview data found");
+          console.error("No sessionId found");
           navigate('/interview');
         }
       } catch (error) {
-        console.error("Evaluation/Fetch Error:", error);
-        alert("Failed to load interview results.");
+        console.error("Report Fetch Error:", error);
+        alert("Failed to load interview results. Please ensure the backend is running.");
       } finally {
         setLoading(false);
       }
