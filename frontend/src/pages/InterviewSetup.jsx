@@ -5,6 +5,17 @@ import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
 
+// Static loading messages moved outside to satisfy linting and optimize performance
+const loadingMessages = [
+  "Analyzing your resume...",
+  "Parsing job requirements...",
+  "Generating interview questions...",
+  "Setting up AI environment...",
+  "Calibrating difficulty level...",
+  "Optimizing experience...",
+  "Almost ready..."
+];
+
 export default function InterviewSetup() {
   const [file, setFile] = useState(null);
   const [jd, setJd] = useState('');
@@ -14,17 +25,6 @@ export default function InterviewSetup() {
   const [isUploading, setIsUploading] = useState(false);
   const [loadingText, setLoadingText] = useState('Processing...');
   
-  // Dynamic loading messages
-  const loadingMessages = [
-    "Analyzing your resume...",
-    "Parsing job requirements...",
-    "Generating interview questions...",
-    "Setting up AI environment...",
-    "Calibrating difficulty level...",
-    "Optimizing experience...",
-    "Almost ready..."
-  ];
-
   useEffect(() => {
     let interval;
     if (isUploading) {
