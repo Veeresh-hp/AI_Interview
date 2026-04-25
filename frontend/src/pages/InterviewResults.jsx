@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { 
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
+} from 'recharts';
 
 export default function InterviewResults() {
   const [loading, setLoading] = useState(true);
@@ -20,6 +23,13 @@ export default function InterviewResults() {
           const res = await axios.get(`${API}/report?session_id=${sessionId}`);
           const data = res.data;
           
+          // Format skills data for Recharts
+          const chartData = data.skills ? Object.keys(data.skills).map(key => ({
+            subject: key,
+            A: data.skills[key],
+            fullMark: 100,
+          })) : [];
+
           setResults({
             totalScore: data.overall_score * 10, // Convert 10-scale to 100-scale
             generalFeedback: data.summary,
@@ -30,7 +40,8 @@ export default function InterviewResults() {
             })),
             pros: data.pros,
             cons: data.cons,
-            verdict: data.verdict
+            verdict: data.verdict,
+            chartData: chartData
           });
         } else {
           console.error("No sessionId found");
@@ -73,6 +84,57 @@ export default function InterviewResults() {
                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                   <svg className="w-32 h-32 text-[#0ea5e9]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
                 </div>
+            </div>
+
+            {/* NEW: Skills Radar Chart & Highlights */}
+            <div className="grid md:grid-cols-2 gap-8">
+               <div className="p-8 bg-card border border-slate-200 dark:border-[#444444] rounded-3xl shadow-sm flex flex-col items-center justify-center min-h-[400px]">
+                  <h3 className="text-lg font-bold mb-6 text-center uppercase tracking-widest text-muted-foreground">Skills Analysis</h3>
+                  <div className="w-full h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={results.chartData}>
+                        <PolarGrid stroke="#444" />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 12, fontWeight: 'bold' }} />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                        <Radar
+                          name="Skills"
+                          dataKey="A"
+                          stroke="#0ea5e9"
+                          fill="#0ea5e9"
+                          fillOpacity={0.5}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+               </div>
+
+               <div className="space-y-6">
+                  <div className="p-6 bg-card border border-slate-200 dark:border-[#444444] rounded-2xl shadow-sm">
+                     <h4 className="text-[#10b981] font-bold text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[#10b981] rounded-full"></span> Top Strengths
+                     </h4>
+                     <ul className="space-y-3">
+                        {results.pros?.map((pro, i) => (
+                           <li key={i} className="flex items-start gap-3 text-sm font-semibold">
+                              <span className="text-[#10b981]">✓</span> {pro}
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+
+                  <div className="p-6 bg-card border border-slate-200 dark:border-[#444444] rounded-2xl shadow-sm">
+                     <h4 className="text-red-500 font-bold text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-500 rounded-full"></span> Areas for Growth
+                     </h4>
+                     <ul className="space-y-3">
+                        {results.cons?.map((con, i) => (
+                           <li key={i} className="flex items-start gap-3 text-sm font-semibold">
+                              <span className="text-red-500">⚠</span> {con}
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               </div>
             </div>
 
             <div className="space-y-6 mt-12">

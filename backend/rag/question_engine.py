@@ -96,6 +96,13 @@ class QuestionEngine:
         - "summary": (string, 2-3 sentences overall evaluation)
         - "pros": (list of strings, top strengths)
         - "cons": (list of strings, areas for improvement)
+        - "skills": {
+            "Technical": (int 0-100),
+            "Communication": (int 0-100),
+            "Clarity": (int 0-100),
+            "Problem Solving": (int 0-100),
+            "Confidence": (int 0-100)
+          }
         - "breakdown": (list of objects with "question", "answer", "score", "feedback", "missing")
         
         Return ONLY valid JSON.
