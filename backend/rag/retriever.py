@@ -1,9 +1,12 @@
 import os
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import SentenceTransformerEmbeddings
 
 def get_retriever(session_id):
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+    embeddings = HuggingFaceInferenceAPIEmbeddings(
+        api_key=os.environ.get("HUGGINGFACE_API_KEY"),
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
     IS_VERCEL = os.environ.get("VERCEL") == "1"
     BASE_DATA_DIR = "/tmp" if IS_VERCEL else "."
     persist_directory = os.path.join(BASE_DATA_DIR, "chroma_db", session_id)

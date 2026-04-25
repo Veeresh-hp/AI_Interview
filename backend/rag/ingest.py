@@ -1,7 +1,6 @@
 import os
 import pdfplumber
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import SentenceTransformerEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 def extract_text_from_pdf(pdf_path):
@@ -33,8 +32,12 @@ def ingest_documents(resume_path=None, jd_path=None, session_id="default"):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     chunks = text_splitter.split_text(full_text)
     
-    # Initialize embeddings
-    embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
+    # Initialize embeddings using Hugging Face API (Saves RAM)
+    from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+    embeddings = HuggingFaceInferenceAPIEmbeddings(
+        api_key=os.environ.get("HUGGINGFACE_API_KEY"),
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
     
     # Create vector store
     IS_VERCEL = os.environ.get("VERCEL") == "1"
