@@ -2,7 +2,7 @@ import os
 import pdfplumber
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import SentenceTransformerEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 def extract_text_from_pdf(pdf_path):
     text = ""

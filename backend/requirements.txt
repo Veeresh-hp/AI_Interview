@@ -12,3 +12,4 @@ groq
 tavily-python
 pymongo[srv]
 gunicorn
+langchain-text-splitters
