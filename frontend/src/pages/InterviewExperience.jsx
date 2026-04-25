@@ -2,16 +2,98 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { Mic, MicOff, Volume2 } from 'lucide-react';
 
 export default function InterviewExperience() {
   const [questions, setQuestions] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answer, setAnswer] = useState('');
+  const [voiceAnswer, setVoiceAnswer] = useState(''); 
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState(90);
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  
   const navigate = useNavigate();
   const location = useLocation();
   const API = '/api';
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
+
+      rec.onresult = (event) => {
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        
+        // Append to voice answer HIDDENLY
+        setVoiceAnswer(prev => prev + (prev ? ' ' : '') + finalTranscript);
+      };
+
+      rec.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        setIsListening(false);
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      setRecognition(rec);
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognition) {
+      alert("Speech recognition is not supported in this browser. Please try Chrome or Edge.");
+      return;
+    }
+
+    if (isListening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+      setIsListening(true);
+    }
+  };
+
+  const speakQuestion = (text) => {
+    if (!window.speechSynthesis) return;
+
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Try to find a female voice
+    const voices = window.speechSynthesis.getVoices();
+    const femaleVoice = voices.find(v => 
+        (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US English') || v.name.includes('Samantha')) && 
+        v.lang.startsWith('en')
+    ) || voices.find(v => v.lang.startsWith('en'));
+
+    if (femaleVoice) utterance.voice = femaleVoice;
+    
+    utterance.rate = 0.95; // Slightly slower for clarity
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+  };
 
   useEffect(() => {
     const { firstQuestion, timeLimit } = location.state || {};
@@ -38,14 +120,22 @@ export default function InterviewExperience() {
   }, [loading, timeLeft]);
 
   const handleNext = useCallback(async () => {
+    // Stop listening and speaking when moving to next question
+    if (recognition) recognition.stop();
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    setIsListening(false);
+    setIsSpeaking(false);
+    
     setLoading(true);
     const { sessionId } = location.state || {};
 
     try {
-      // 1. Submit answer and get next step
+      // 1. Submit answer (combined manual + voice) and get next step
+      const combinedAnswer = (answer.trim() + " " + voiceAnswer.trim()).trim();
+      
       const res = await axios.post(`${API}/answer`, {
         session_id: sessionId,
-        answer: answer
+        answer: combinedAnswer
       });
 
       if (res.data.status === 'completed') {
@@ -63,6 +153,7 @@ export default function InterviewExperience() {
         setQuestions(prev => [...prev, nextQ]);
         setCurrentIdx(prev => prev + 1);
         setAnswer('');
+        setVoiceAnswer(''); // Reset hidden voice answer
         setTimeLeft(location.state?.timeLimit || 90);
       }
     } catch (error) {
@@ -71,7 +162,7 @@ export default function InterviewExperience() {
     } finally {
       setLoading(false);
     }
-  }, [answer, location.state, navigate]);
+  }, [answer, location.state, navigate, recognition, voiceAnswer]);
   
   // Auto-advance when time hits zero
   useEffect(() => {
@@ -85,9 +176,19 @@ export default function InterviewExperience() {
 
   const handleLeave = () => {
     if (window.confirm('Are you sure you want to leave the interview? Your progress will not be saved.')) {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (recognition) recognition.stop();
       navigate('/dashboard');
     }
   };
+
+  // Final cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (recognition) recognition.stop();
+    };
+  }, [recognition]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -139,29 +240,99 @@ export default function InterviewExperience() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
+                    onAnimationComplete={() => speakQuestion(questions[currentIdx])}
                     className="flex flex-col h-full text-foreground"
                   >
-                    <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-relaxed mb-10 max-w-3xl">
-                      {questions[currentIdx]}
-                    </h2>
+                    <div className="flex items-start gap-6 mb-10">
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-relaxed flex-1">
+                        {questions[currentIdx]}
+                      </h2>
+                      
+                      <button 
+                        onClick={() => speakQuestion(questions[currentIdx])}
+                        className={`mt-2 p-4 rounded-2xl border transition-all shadow-sm ${
+                          isSpeaking 
+                            ? 'bg-[#0ea5e9]/10 border-[#0ea5e9] text-[#0ea5e9] shadow-[0_0_15px_rgba(14,165,233,0.2)]' 
+                            : 'bg-card border-slate-200 dark:border-[#444444] text-slate-400 hover:text-[#0ea5e9] hover:border-[#0ea5e9] hover:bg-slate-50 dark:hover:bg-[#2a2a2a]'
+                        }`}
+                        title="Read Question Aloud"
+                      >
+                        <Volume2 size={24} className={isSpeaking ? 'animate-bounce' : ''} />
+                      </button>
+                    </div>
 
-                    <textarea
-                      value={answer}
-                      onChange={e => setAnswer(e.target.value)}
-                      placeholder="Start typing your answer here..."
-                      className="w-full flex-1 min-h-[300px] p-8 text-lg bg-card border border-slate-200 dark:border-[#444444] rounded-2xl outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 transition-all resize-none shadow-sm text-foreground font-medium"
-                      autoFocus
-                    />
+                    <div className="relative flex-1 flex flex-col">
+                      <textarea
+                        value={answer}
+                        onChange={e => setAnswer(e.target.value)}
+                        placeholder="Type your answer here, or use the floating mic below to speak naturally..."
+                        className="w-full flex-1 min-h-[300px] p-8 text-lg bg-card border border-slate-200 dark:border-[#444444] rounded-2xl outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20 transition-all resize-none shadow-sm text-foreground font-medium"
+                        autoFocus
+                      />
+                    </div>
                   </motion.div>
                 )}
             </AnimatePresence>
           </div>
 
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-between items-center relative h-32">
+             <div className="flex-1 flex justify-center">
+                {/* Modern Floating Mic Assistant */}
+                <div className="relative">
+                  <AnimatePresence>
+                    {isListening && (
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1.2, opacity: 0.5 }}
+                        exit={{ scale: 0.8, opacity: 0 }}
+                        className="absolute inset-0 rounded-full bg-[#0ea5e9] blur-xl"
+                        transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse" }}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  <button
+                    onClick={toggleListening}
+                    className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl ${
+                      isListening 
+                        ? 'bg-[#0ea5e9] text-white scale-110 rotate-0' 
+                        : 'bg-card border-4 border-slate-100 dark:border-[#333] text-slate-400 hover:text-[#0ea5e9] hover:border-[#0ea5e9] hover:scale-105'
+                    }`}
+                  >
+                    {isListening ? (
+                      <div className="flex items-center gap-1">
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [15, 35, 15] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.4 }} className="w-1 bg-white rounded-full" />
+                        <Mic size={28} className="mx-1" />
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [15, 35, 15] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.4, delay: 0.1 }} className="w-1 bg-white rounded-full" />
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <MicOff size={28} />
+                        <span className="absolute -top-4 -right-4 bg-slate-100 dark:bg-slate-800 text-[8px] px-1.5 py-0.5 rounded-md font-black border border-slate-200 dark:border-slate-700">EN</span>
+                      </div>
+                    )}
+                  </button>
+                  
+                  {isListening && (
+                    <motion.span 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0ea5e9] text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg"
+                    >
+                      AI is listening...
+                    </motion.span>
+                  )}
+                </div>
+             </div>
+
              <button
                onClick={handleNext}
-               disabled={loading || answer.length < 5}
-               className="bg-[#111] dark:bg-slate-100 dark:text-slate-950 text-white px-10 py-5 rounded-2xl text-lg font-bold hover:bg-black dark:hover:bg-white transition-all disabled:opacity-50 shadow-md"
+               disabled={loading || (answer.length < 5 && voiceAnswer.length < 5)}
+               className="bg-[#111] dark:bg-slate-100 dark:text-slate-950 text-white px-10 py-5 rounded-2xl text-lg font-bold hover:bg-black dark:hover:bg-white transition-all disabled:opacity-50 shadow-md relative z-20"
              >
                {currentIdx === (location.state?.totalQuestions || 1) - 1 ? 'Finish Interview' : 'Next Question'}
              </button>
