@@ -19,6 +19,7 @@ from rag.retriever import retrieve_context
 from rag.question_engine import QuestionEngine
 
 app = FastAPI()
+print("🚀 Backend server is initializing...")
 
 # Enable CORS for frontend
 app.add_middleware(
