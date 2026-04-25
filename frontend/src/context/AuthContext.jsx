@@ -16,8 +16,15 @@ export const AuthProvider = ({ children }) => {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Login failed');
+            let errorMsg = 'Login failed';
+            try {
+                const error = await response.json();
+                errorMsg = error.detail || errorMsg;
+            } catch {
+                // If response is not JSON
+                errorMsg = await response.text() || errorMsg;
+            }
+            throw new Error(errorMsg);
         }
 
         const userData = await response.json();
@@ -34,8 +41,14 @@ export const AuthProvider = ({ children }) => {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Registration failed');
+            let errorMsg = 'Registration failed';
+            try {
+                const error = await response.json();
+                errorMsg = error.detail || errorMsg;
+            } catch {
+                errorMsg = await response.text() || errorMsg;
+            }
+            throw new Error(errorMsg);
         }
 
         const userData = await response.json();

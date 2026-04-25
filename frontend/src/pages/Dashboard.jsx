@@ -9,6 +9,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { loadResume } = useResume();
+
   const [openMenuId, setOpenMenuId] = useState(null);
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,9 @@ export default function Dashboard() {
       setLoading(false);
     }
   }, [user?.email]);
+
+  if (authLoading) return <div className="h-screen flex items-center justify-center bg-background text-foreground">Loading...</div>;
+  if (!isAuthenticated) return null;
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this resume?")) return;

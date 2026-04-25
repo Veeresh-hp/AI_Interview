@@ -131,7 +131,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col xl:flex-row items-start xl:items-center gap-4 mt-2"
           >
-            <Link to="/interview" className="px-6 py-3 bg-[#111] dark:bg-slate-100 dark:text-slate-900 text-white rounded-full font-bold hover:bg-black dark:hover:bg-white transition-all shadow-xl shadow-black/10 hover:-translate-y-0.5 text-sm">
+            <Link to={isAuthenticated ? "/interview" : "/auth"} className="px-6 py-3 bg-[#111] dark:bg-slate-100 dark:text-slate-900 text-white rounded-full font-bold hover:bg-black dark:hover:bg-white transition-all shadow-xl shadow-black/10 hover:-translate-y-0.5 text-sm">
               Land more interviews for free
             </Link>
             <Link to="/auth" className="text-[#0ea5e9] hover:text-[#0284c7] hover:underline font-semibold text-sm transition-colors mt-2 xl:mt-4 xl:ml-0">
