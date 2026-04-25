@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -19,15 +19,29 @@ import { useAuth } from '../hooks/useAuth';
 // Standardized casing path normalization
 export default function Landing() {
   const { theme, toggleTheme } = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   return (
@@ -80,9 +94,44 @@ export default function Landing() {
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             {isAuthenticated ? (
-              <Link to="/dashboard" className="bg-[#0ea5e9] text-white px-8 py-3 rounded-full text-sm font-semibold hover:bg-[#0284c7] transition-colors shadow-md flex items-center gap-2">
-                Dashboard <ArrowRight size={16} />
-              </Link>
+              <div className="relative" ref={profileMenuRef}>
+                <button 
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="w-10 h-10 rounded-full bg-slate-900 dark:bg-[#E0E0E0] dark:text-[#121212] text-white flex items-center justify-center font-bold text-sm hover:scale-105 transition-transform shadow-md"
+                >
+                  {user?.name ? user.name[0].toUpperCase() : <Users size={18} />}
+                </button>
+                
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-3 w-48 bg-card border border-slate-100 dark:border-[#444444] shadow-xl rounded-2xl py-2 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="px-4 py-2 border-b border-slate-50 dark:border-[#444444] mb-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Account</p>
+                      <p className="text-sm font-bold truncate text-foreground">{user?.name || 'User'}</p>
+                    </div>
+                    <Link 
+                      to="/dashboard" 
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-[#f0f9ff] dark:hover:bg-[#1e1e1e] text-foreground transition-colors"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                       📊 Dashboard
+                    </Link>
+                    <Link 
+                      to="/profile" 
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-[#f0f9ff] dark:hover:bg-[#1e1e1e] text-foreground transition-colors"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                       👤 Profile
+                    </Link>
+                    <hr className="border-slate-50 dark:border-[#444444] my-1" />
+                    <button 
+                      onClick={() => { logout(); setShowProfileMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                       🚪 Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link to="/auth" className="bg-[#111] dark:bg-[#E0E0E0] dark:text-[#121212] text-white px-8 py-3 rounded-full text-sm font-semibold hover:bg-black dark:hover:bg-white transition-colors shadow-md">
                 Get Started
