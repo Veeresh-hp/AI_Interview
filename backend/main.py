@@ -250,6 +250,25 @@ async def get_history(userEmail: Optional[str] = Query(None)):
             
     return sessions
 
+@app.post("/api/coach")
+async def ai_coach(session_id: str, query: str):
+    session_data = sessions_col.find_one({"_id": session_id})
+    if not session_data:
+        from bson import ObjectId
+        try:
+            session_data = sessions_col.find_one({"_id": ObjectId(session_id)})
+        except:
+            pass
+            
+    if not session_data:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    report = session_data.get("final_report", {})
+    history = session_data.get("history", [])
+    
+    coach_response = engine.get_coaching(history, report, query)
+    return {"response": coach_response}
+
 @app.post("/api/resumes")
 async def save_resume(resume_data: dict):
     # Check if this is an update (id provided)

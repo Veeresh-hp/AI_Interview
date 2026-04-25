@@ -117,3 +117,30 @@ class QuestionEngine:
             return json.loads(content)
         except Exception as e:
             return {"error": "Failed to generate report"}
+
+    def get_coaching(self, history, report, user_query):
+        coach_prompt = f"""
+        You are an expert AI Interview Coach. You are helping a candidate who just finished a mock interview.
+        
+        Interview Summary: {report.get('summary', 'No summary available')}
+        Overall Score: {report.get('overall_score', 'N/A')}
+        
+        Candidate History:
+        {json.dumps(history, indent=2)}
+        
+        Candidate Question: {user_query}
+        
+        Instructions:
+        - Provide actionable, encouraging, and specific advice.
+        - If they ask for a better answer, provide a "Model Answer".
+        - If they ask about a specific skill, explain how they can improve it.
+        - Keep your response concise but very high-value.
+        - Return your response in plain text.
+        """
+        
+        response = self.llm.invoke([
+            SystemMessage(content="You are a professional AI Interview Coach."),
+            HumanMessage(content=coach_prompt)
+        ])
+        
+        return response.content.strip()

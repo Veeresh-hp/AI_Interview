@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import html2pdf from 'html2pdf.js';
+import { Download } from 'lucide-react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
 } from 'recharts';
@@ -9,10 +11,53 @@ import {
 export default function InterviewResults() {
   const [loading, setLoading] = useState(true);
   const [results, setResults] = useState(null);
+  const [chat, setChat] = useState([]);
+  const [userQuery, setUserQuery] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const API = '/api';
+
+  const handleCoachQuery = async (e) => {
+    e.preventDefault();
+    if (!userQuery.trim() || chatLoading) return;
+
+    const { sessionId } = location.state || {};
+    const newUserMsg = { role: 'user', content: userQuery };
+    setChat(prev => [...prev, newUserMsg]);
+    setUserQuery('');
+    setChatLoading(true);
+
+    try {
+      const res = await axios.post(`${API}/coach?session_id=${sessionId}&query=${encodeURIComponent(userQuery)}`);
+      setChat(prev => [...prev, { role: 'coach', content: res.data.response }]);
+    } catch (error) {
+      console.error("Coach Error:", error);
+      setChat(prev => [...prev, { role: 'coach', content: "Sorry, I'm having trouble connecting. Please try again." }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const downloadPDF = () => {
+    const element = document.getElementById('report-content');
+    const opt = {
+      margin:       10,
+      filename:     `Interview_Report_${new Date().toLocaleDateString()}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Temporarily hide buttons for the PDF
+    const buttons = document.getElementById('action-buttons');
+    if (buttons) buttons.style.display = 'none';
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      if (buttons) buttons.style.display = 'flex';
+    });
+  };
 
   useEffect(() => {
     const { sessionId } = location.state || {};
@@ -67,7 +112,7 @@ export default function InterviewResults() {
             <p className="text-xl font-bold animate-pulse text-muted-foreground text-center">AI is evaluating your interview... <br/><span className="text-sm font-medium opacity-60">This may take a moment</span></p>
          </div>
       ) : results ? (
-         <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full max-w-4xl space-y-8 pb-20 pt-10">
+         <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} id="report-content" className="w-full max-w-4xl space-y-8 pb-20 pt-10">
             <div className="text-center mb-12">
                <h1 className="text-4xl font-bold mb-4 tracking-tight">Interview Results</h1>
                <p className="text-slate-500 dark:text-[#B0B0B0] text-lg font-medium">Detailed feedback mapped to your performance.</p>
@@ -86,50 +131,54 @@ export default function InterviewResults() {
                 </div>
             </div>
 
-            {/* NEW: Skills Radar Chart & Highlights */}
-            <div className="grid md:grid-cols-2 gap-8">
-               <div className="p-8 bg-card border border-slate-200 dark:border-[#444444] rounded-3xl shadow-sm flex flex-col items-center justify-center min-h-[400px]">
+            {/* Performance Analysis: Radar Chart & Highlights */}
+            <div className="grid md:grid-cols-5 gap-8 items-start">
+               {/* Left: Radar Chart (3/5 width) */}
+               <div className="md:col-span-3 p-8 bg-card border border-slate-200 dark:border-[#444444] rounded-3xl shadow-sm flex flex-col items-center justify-center min-h-[450px]">
                   <h3 className="text-lg font-bold mb-6 text-center uppercase tracking-widest text-muted-foreground">Skills Analysis</h3>
-                  <div className="w-full h-[300px]">
+                  <div className="w-full h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={results.chartData}>
                         <PolarGrid stroke="#444" />
-                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 12, fontWeight: 'bold' }} />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 11, fontWeight: 'bold' }} />
                         <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                         <Radar
                           name="Skills"
                           dataKey="A"
                           stroke="#0ea5e9"
                           fill="#0ea5e9"
-                          fillOpacity={0.5}
+                          fillOpacity={0.4}
                         />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
                </div>
 
-               <div className="space-y-6">
-                  <div className="p-6 bg-card border border-slate-200 dark:border-[#444444] rounded-2xl shadow-sm">
-                     <h4 className="text-[#10b981] font-bold text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-[#10b981] rounded-full"></span> Top Strengths
+               {/* Right: Strengths & Weaknesses (2/5 width) */}
+               <div className="md:col-span-2 space-y-6">
+                  <div className="p-6 bg-card border border-slate-200 dark:border-[#444444] rounded-2xl shadow-sm relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">🏆</div>
+                     <h4 className="text-emerald-500 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+                        Key Strengths
                      </h4>
-                     <ul className="space-y-3">
+                     <ul className="space-y-4">
                         {results.pros?.map((pro, i) => (
-                           <li key={i} className="flex items-start gap-3 text-sm font-semibold">
-                              <span className="text-[#10b981]">✓</span> {pro}
+                           <li key={i} className="flex items-start gap-3 text-sm font-bold text-foreground/90 leading-tight">
+                              <span className="text-emerald-500 mt-0.5">✦</span> {pro}
                            </li>
                         ))}
                      </ul>
                   </div>
 
-                  <div className="p-6 bg-card border border-slate-200 dark:border-[#444444] rounded-2xl shadow-sm">
-                     <h4 className="text-red-500 font-bold text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-red-500 rounded-full"></span> Areas for Growth
+                  <div className="p-6 bg-card border border-slate-200 dark:border-[#444444] rounded-2xl shadow-sm relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">💡</div>
+                     <h4 className="text-red-500 font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2">
+                        Areas for Growth
                      </h4>
-                     <ul className="space-y-3">
+                     <ul className="space-y-4">
                         {results.cons?.map((con, i) => (
-                           <li key={i} className="flex items-start gap-3 text-sm font-semibold">
-                              <span className="text-red-500">⚠</span> {con}
+                           <li key={i} className="flex items-start gap-3 text-sm font-bold text-foreground/90 leading-tight">
+                              <span className="text-red-500 mt-0.5">○</span> {con}
                            </li>
                         ))}
                      </ul>
@@ -161,7 +210,71 @@ export default function InterviewResults() {
                ))}
             </div>
 
-            <div className="mt-12 flex justify-center gap-4">
+            {/* AI Coach Chat Section */}
+            <div className="mt-16 bg-[#f8fafc] dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#333] rounded-3xl p-8 shadow-inner">
+               <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 bg-[#0ea5e9] rounded-2xl flex items-center justify-center text-white text-xl shadow-lg">👨‍🏫</div>
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight">Ask the AI Interview Coach</h3>
+                    <p className="text-sm text-slate-500 font-medium italic">"How can I improve? Ask me anything about your performance."</p>
+                  </div>
+               </div>
+
+               <div className="space-y-4 max-h-[400px] overflow-y-auto mb-6 pr-4 custom-scrollbar">
+                  {chat.length === 0 && (
+                    <div className="text-center py-10 opacity-40">
+                      <p className="text-sm font-bold uppercase tracking-widest">No messages yet. Start the coaching session below!</p>
+                    </div>
+                  )}
+                  {chat.map((msg, i) => (
+                    <motion.div 
+                      initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      key={i} 
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[85%] p-4 rounded-2xl font-medium text-sm leading-relaxed shadow-sm ${
+                        msg.role === 'user' 
+                          ? 'bg-[#0ea5e9] text-white rounded-tr-none' 
+                          : 'bg-card border border-slate-200 dark:border-[#444444] text-foreground rounded-tl-none'
+                      }`}>
+                        {msg.content}
+                      </div>
+                    </motion.div>
+                  ))}
+                  {chatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-card border border-slate-200 dark:border-[#444444] p-4 rounded-2xl rounded-tl-none flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-[#0ea5e9] rounded-full animate-bounce"></span>
+                        <span className="w-1.5 h-1.5 bg-[#0ea5e9] rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="w-1.5 h-1.5 bg-[#0ea5e9] rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      </div>
+                    </div>
+                  )}
+               </div>
+
+               <form onSubmit={handleCoachQuery} className="relative">
+                  <input
+                    type="text"
+                    value={userQuery}
+                    onChange={(e) => setUserQuery(e.target.value)}
+                    placeholder="Ask a follow-up question (e.g., 'Give me a better answer for Q1')"
+                    className="w-full bg-white dark:bg-[#111] border border-slate-200 dark:border-[#444] rounded-2xl p-5 pr-32 outline-none focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/10 transition-all font-semibold text-sm shadow-sm"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={chatLoading || !userQuery.trim()}
+                    className="absolute right-2 top-2 bottom-2 px-6 bg-[#111] dark:bg-slate-100 dark:text-slate-950 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all disabled:opacity-50"
+                  >
+                    Ask Coach
+                  </button>
+               </form>
+            </div>
+
+            <div id="action-buttons" className="mt-12 flex justify-center gap-4">
+              <button onClick={downloadPDF} className="px-8 py-4 bg-[#0ea5e9] text-white font-bold rounded-2xl hover:bg-[#0284c7] transition-all shadow-lg flex items-center gap-2">
+                 <Download size={20} /> Download Report
+              </button>
               <Link to="/interview" className="px-8 py-4 bg-[#111] dark:bg-slate-100 dark:text-slate-950 text-white font-bold rounded-2xl hover:bg-black dark:hover:bg-white transition-all shadow-md">Retry Interview</Link>
               <Link to="/dashboard" className="px-8 py-4 bg-card border border-slate-200 dark:border-slate-800 font-bold rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900 transition-all text-foreground shadow-sm">Back to Dashboard</Link>
             </div>
