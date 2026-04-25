@@ -4,10 +4,6 @@
     {
       "source": "/api/(.*)",
       "destination": "https://ai-interview-mdwp.onrender.com/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
     }
   ]
 }
