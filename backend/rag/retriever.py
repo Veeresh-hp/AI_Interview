@@ -44,5 +44,6 @@ def retrieve_context(query, session_id):
     if not retriever:
         return ""
     
-    docs = retriever.get_relevant_documents(query)
+    # Updated to use .invoke() as get_relevant_documents is removed in newer LangChain versions
+    docs = retriever.invoke(query)
     return "\n\n".join([doc.page_content for doc in docs])

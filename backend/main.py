@@ -50,7 +50,7 @@ if not MONGODB_URI:
     # Fallback for local testing if .env isn't loaded correctly
     MONGODB_URI = "mongodb://localhost:27017"
 
-client = MongoClient(MONGODB_URI)
+client = MongoClient(MONGODB_URI, connectTimeoutMS=5000, socketTimeoutMS=5000, serverSelectionTimeoutMS=5000)
 db = client['resume_ai']
 users_col = db['users']
 resumes_col = db['resumes']
