@@ -197,31 +197,31 @@ export default function InterviewExperience() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-8 flex flex-col pt-20 overflow-hidden transition-colors">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8 flex flex-col pt-16 md:pt-20 overflow-hidden transition-colors">
       <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col relative z-20">
-          <div className="mb-8 flex justify-between items-center text-sm font-bold uppercase tracking-widest">
-            <div className="flex items-center gap-4">
+          <div className="mb-6 md:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-sm font-bold uppercase tracking-widest">
+            <div className="flex items-center justify-between w-full md:w-auto gap-4">
               <button 
                 onClick={handleLeave}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-100 dark:border-red-900/30 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 transition-colors text-[10px] font-bold"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                LEAVE INTERVIEW
+                LEAVE
               </button>
-              <span className="text-slate-400 dark:text-slate-500 font-bold">Question {currentIdx + 1} of {location.state?.totalQuestions || Math.max(questions.length, 1)}</span>
+              <span className="text-slate-400 dark:text-slate-500 font-bold text-[10px] md:text-xs">Q {currentIdx + 1} of {location.state?.totalQuestions || Math.max(questions.length, 1)}</span>
             </div>
             
-            <div className="flex items-center gap-6">
+            <div className="flex items-center justify-between w-full md:w-auto gap-6">
               {/* Timer Display */}
               {!loading && (
                 <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border-2 transition-colors ${timeLeft < 15 ? 'bg-red-50 dark:bg-[#2a2a2a] border-red-200 dark:border-[#444444] text-red-500 animate-pulse' : 'bg-background-alt border-slate-100 dark:border-[#444444] text-muted-foreground'}`}>
                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                   <span className="tabular-nums">{formatTime(timeLeft)}</span>
+                   <span className="tabular-nums text-xs md:text-sm">{formatTime(timeLeft)}</span>
                 </div>
               )}
               
-              <span className="text-[#0ea5e9] flex items-center gap-2 font-bold">
-                   <span className="w-2.5 h-2.5 rounded-full bg-[#0ea5e9] animate-pulse inline-block"></span> Recording
+              <span className="text-[#0ea5e9] flex items-center gap-2 font-bold text-[10px] md:text-xs">
+                   <span className="w-2 h-2 rounded-full bg-[#0ea5e9] animate-pulse inline-block"></span> Recording
               </span>
             </div>
           </div>
@@ -275,8 +275,8 @@ export default function InterviewExperience() {
             </AnimatePresence>
           </div>
 
-          <div className="mt-8 flex flex-col md:flex-row justify-between items-center relative h-auto md:h-32 gap-8 md:gap-0">
-             <div className="flex-1 flex justify-center order-2 md:order-1">
+          <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-8 md:gap-0 relative min-h-[140px] md:h-32 pb-10 md:pb-0">
+             <div className="flex-1 flex justify-center w-full order-1 md:order-none">
                 {/* Modern Floating Mic Assistant */}
                 <div className="relative">
                   <AnimatePresence>
@@ -293,24 +293,26 @@ export default function InterviewExperience() {
 
                   <button
                     onClick={toggleListening}
-                    className={`relative z-10 w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl ${
+                    className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl ${
                       isListening 
                         ? 'bg-[#0ea5e9] text-white scale-110 rotate-0' 
                         : 'bg-card border-4 border-slate-100 dark:border-[#333] text-slate-400 hover:text-[#0ea5e9] hover:border-[#0ea5e9] hover:scale-105'
                     }`}
                   >
                     {isListening ? (
-                      <div className="flex items-center gap-0.5 md:gap-1">
-                        <motion.div animate={{ height: [8, 20, 8] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-0.5 md:w-1 bg-white rounded-full" />
-                        <motion.div animate={{ height: [12, 30, 12] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-0.5 md:w-1 bg-white rounded-full" />
-                        <Mic size={24} className="mx-0.5 md:mx-1" />
-                        <motion.div animate={{ height: [12, 30, 12] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-0.5 md:w-1 bg-white rounded-full" />
-                        <motion.div animate={{ height: [8, 20, 8] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-0.5 md:w-1 bg-white rounded-full" />
+                      <div className="flex items-center gap-1">
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [15, 35, 15] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.4 }} className="w-1 bg-white rounded-full" />
+                        <Mic size={28} className="mx-1" />
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.1 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [15, 35, 15] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1 bg-white rounded-full" />
+                        <motion.div animate={{ height: [10, 25, 10] }} transition={{ repeat: Infinity, duration: 0.4, delay: 0.1 }} className="w-1 bg-white rounded-full" />
                       </div>
                     ) : (
                       <div className="relative">
-                        <MicOff size={24} className="md:w-7 md:h-7" />
-                        <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-slate-100 dark:bg-slate-800 text-[6px] md:text-[8px] px-1 md:px-1.5 py-0.5 rounded-md font-black border border-slate-200 dark:border-slate-700">EN</span>
+                        <MicOff size={28} />
+                        <span className="absolute -top-4 -right-4 bg-slate-100 dark:bg-slate-800 text-[8px] px-1.5 py-0.5 rounded-md font-black border border-slate-200 dark:border-slate-700">EN</span>
                       </div>
                     )}
                   </button>
@@ -319,7 +321,7 @@ export default function InterviewExperience() {
                     <motion.span 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="absolute -top-10 md:-top-12 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0ea5e9] text-white px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-lg"
+                      className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0ea5e9] text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg"
                     >
                       AI is listening...
                     </motion.span>
@@ -330,7 +332,7 @@ export default function InterviewExperience() {
              <button
                onClick={handleNext}
                disabled={loading || (answer.length < 5 && voiceAnswer.length < 5)}
-               className="w-full md:w-auto order-1 md:order-2 bg-[#111] dark:bg-slate-100 dark:text-slate-950 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl text-base md:text-lg font-bold hover:bg-black dark:hover:bg-white transition-all disabled:opacity-50 shadow-md relative z-20"
+               className="w-full md:w-auto bg-[#111] dark:bg-slate-100 dark:text-slate-950 text-white px-10 py-5 rounded-2xl text-base md:text-lg font-bold hover:bg-black dark:hover:bg-white transition-all disabled:opacity-50 shadow-md relative z-20 order-2 md:order-none"
              >
                {currentIdx === (location.state?.totalQuestions || 1) - 1 ? 'Finish Interview' : 'Next Question'}
              </button>

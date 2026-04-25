@@ -105,47 +105,47 @@ export default function InterviewResults() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-8 flex items-center justify-center transition-colors">
-      {loading ? (
-         <div className="flex flex-col items-center justify-center space-y-6">
-            <div className="w-16 h-16 border-4 border-slate-200 dark:border-[#444444] border-t-[#0ea5e9] rounded-full animate-spin"></div>
-            <p className="text-xl font-bold animate-pulse text-muted-foreground text-center">AI is evaluating your interview... <br/><span className="text-sm font-medium opacity-60">This may take a moment</span></p>
-         </div>
-      ) : results ? (
-          <motion.div 
-            initial={{ y: 30, opacity: 0 }} 
-            animate={{ y: 0, opacity: 1 }} 
-            id="report-content" 
-            className="w-full max-w-4xl space-y-8 pb-32 pt-10 px-2 md:px-0"
-          >
-            <div className="text-center mb-8 md:mb-12">
-               <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight px-2">Interview Results</h1>
-               <p className="text-slate-500 dark:text-[#B0B0B0] text-sm md:text-lg font-medium px-4">Detailed feedback mapped to your performance.</p>
-            </div>
+    <div className="min-h-screen flex flex-col md:flex-row overflow-hidden bg-background text-foreground transition-colors duration-300">
+      <Sidebar />
+      <MobileNav />
+      
+      <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
+        <div className="max-w-7xl mx-auto px-4 md:px-12 py-8 md:py-12 flex flex-col items-center">
+          {loading ? (
+             <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                <div className="w-16 h-16 border-4 border-slate-200 dark:border-[#444444] border-t-[#0ea5e9] rounded-full animate-spin"></div>
+                <p className="text-xl font-bold animate-pulse text-muted-foreground text-center">AI is evaluating your interview... <br/><span className="text-sm font-medium opacity-60">This may take a moment</span></p>
+             </div>
+          ) : results ? (
+             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} id="report-content" className="w-full max-w-4xl space-y-8 pb-10 pt-4 md:pt-10">
+                <div className="text-center mb-8 md:mb-12">
+                   <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Interview Results</h1>
+                   <p className="text-slate-500 dark:text-[#B0B0B0] text-base md:text-lg font-medium">Detailed feedback mapped to your performance.</p>
+                </div>
 
-            <div className="bg-card border border-slate-200 dark:border-[#444444] shadow-md p-6 md:p-10 rounded-3xl flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-8 relative overflow-hidden mx-2">
-                <div className="relative z-10 text-foreground">
-                   <h2 className="text-[10px] md:text-sm font-bold text-[#0ea5e9] uppercase tracking-widest mb-1 md:mb-2">Overall Score</h2>
-                   <div className="text-5xl md:text-7xl font-extrabold font-serif tracking-tight">{results.totalScore}<span className="text-2xl md:text-3xl text-slate-400 dark:text-[#888888]">/100</span></div>
+                <div className="bg-card border border-slate-200 dark:border-[#444444] shadow-md p-6 md:p-10 rounded-3xl flex flex-col md:flex-row items-center justify-between text-center md:text-left gap-8 relative overflow-hidden">
+                    <div className="relative z-10 text-foreground">
+                       <h2 className="text-xs font-bold text-[#0ea5e9] uppercase tracking-widest mb-2">Overall Score</h2>
+                       <div className="text-6xl md:text-7xl font-extrabold font-serif tracking-tight">{results.totalScore}<span className="text-2xl md:text-3xl text-slate-400 dark:text-[#888888]">/100</span></div>
+                    </div>
+                    <div className="flex-1 max-w-lg relative z-10 text-foreground">
+                       <p className="text-base md:text-lg leading-relaxed font-semibold italic opacity-90">"{results.generalFeedback}"</p>
+                    </div>
+                    <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                      <svg className="w-32 h-32 text-[#0ea5e9]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    </div>
                 </div>
-                <div className="flex-1 max-w-lg relative z-10 text-foreground">
-                   <p className="text-base md:text-lg leading-relaxed font-semibold italic opacity-90">"{results.generalFeedback}"</p>
-                </div>
-                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none hidden md:block">
-                  <svg className="w-32 h-32 text-[#0ea5e9]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </div>
-            </div>
 
             {/* Performance Analysis: Radar Chart & Highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start px-2">
-               {/* Left: Radar Chart (3/5 width on desktop, full on mobile) */}
-               <div className="md:col-span-3 p-4 md:p-8 bg-card border border-slate-200 dark:border-[#444444] rounded-3xl shadow-sm flex flex-col items-center justify-center min-h-[350px] md:min-h-[450px]">
-                  <h3 className="text-sm md:text-lg font-bold mb-6 text-center uppercase tracking-widest text-muted-foreground">Skills Analysis</h3>
-                  <div className="w-full h-[250px] md:h-[350px]">
+            <div className="grid md:grid-cols-5 gap-8 items-start">
+               {/* Left: Radar Chart (3/5 width) */}
+               <div className="md:col-span-3 p-8 bg-card border border-slate-200 dark:border-[#444444] rounded-3xl shadow-sm flex flex-col items-center justify-center min-h-[450px]">
+                  <h3 className="text-lg font-bold mb-6 text-center uppercase tracking-widest text-muted-foreground">Skills Analysis</h3>
+                  <div className="w-full h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart cx="50%" cy="50%" outerRadius="75%" data={results.chartData}>
+                      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={results.chartData}>
                         <PolarGrid stroke="#444" />
-                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 10, fontWeight: 'bold' }} />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 11, fontWeight: 'bold' }} />
                         <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                         <Radar
                           name="Skills"

@@ -1,5 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
+import Sidebar from '../components/Sidebar';
+import MobileNav from '../components/MobileNav';
 import DashboardPreview from '../components/resume/DashboardPreview';
 import { useResume } from '../hooks/useResume';
 import { useAuth } from '../hooks/useAuth';
@@ -15,12 +17,12 @@ export default function Dashboard() {
   const [showAll, setShowAll] = useState(false);
   const [interviews, setInterviews] = useState([]);
 
-  console.log("Dashboard Auth State:", { isAuthenticated, authLoading, user });
+  // ... (existing state) ...
 
   const fetchResumes = useCallback(async () => {
     if (!user?.email) return;
     try {
-      const response = await fetch(`/api/resumes?userEmail=${user.email}`);
+      const response = await fetch(`${API}/resumes?userEmail=${user.email}`);
       const data = await response.json();
       setResumes(data);
     } catch (err) {
@@ -33,7 +35,7 @@ export default function Dashboard() {
   const fetchInterviews = useCallback(async () => {
     if (!user?.email) return;
     try {
-      const response = await fetch(`/api/history?userEmail=${user.email}`);
+      const response = await fetch(`${API}/history?userEmail=${user.email}`);
       const data = await response.json();
       setInterviews(data);
     } catch (err) {
@@ -43,10 +45,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      console.log("Not authenticated, redirecting to /auth");
       navigate('/auth');
     } else if (isAuthenticated) {
-      console.log("Authenticated, fetching data for:", user?.email);
       fetchResumes();
       fetchInterviews();
     }
@@ -54,16 +54,16 @@ export default function Dashboard() {
 
   if (authLoading || (loading && isAuthenticated)) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-background text-foreground space-y-4">
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-background text-foreground space-y-4 text-center px-4">
         <div className="w-12 h-12 border-4 border-slate-200 dark:border-[#444444] border-t-[#0ea5e9] rounded-full animate-spin"></div>
-        <p className="text-sm font-bold text-muted-foreground animate-pulse tracking-widest uppercase">Preparing your workspace...</p>
+        <p className="text-sm font-bold text-muted-foreground animate-pulse tracking-widest uppercase">Preparing your professional workspace...</p>
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-background text-foreground">
+      <div className="h-screen w-full flex items-center justify-center bg-background text-foreground px-4 text-center">
         <p className="text-sm font-bold text-red-500">Security Check Failed. Redirecting to login...</p>
       </div>
     );
@@ -74,7 +74,7 @@ export default function Dashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this resume?")) return;
     try {
-      const response = await fetch(`/api/resumes/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${API}/resumes/${id}`, { method: 'DELETE' });
       if (response.ok) {
         setResumes(resumes.filter(r => r.id !== id));
       }
@@ -88,32 +88,37 @@ export default function Dashboard() {
     navigate('/resume-builder');
   };
 
+  const API = '/api';
+
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      <main className="flex-1 overflow-y-auto relative pb-24 md:pb-8">
+    <div className="h-screen flex flex-col md:flex-row overflow-hidden bg-background text-foreground transition-colors duration-300">
+      <Sidebar />
+      <MobileNav />
+      
+      <main className="flex-1 overflow-y-auto relative pb-24 md:pb-0">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-sky-500/5 to-transparent pointer-events-none -z-10" />
         
-        <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-16 py-12">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 py-8 md:py-12">
           {/* Header Section */}
-          <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight mb-2">
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
                 Welcome back, <span className="text-[#0ea5e9]">{user?.name?.split(' ')[0] || 'User'}</span>
               </h1>
-              <p className="text-muted-foreground text-lg font-medium">Manage your professional resumes and AI mock interviews.</p>
+              <p className="text-muted-foreground text-base md:text-lg font-medium">Manage your professional resumes and AI mock interviews.</p>
             </div>
             
             <Link 
               to="/resume-builder" 
-              className="px-6 py-3 bg-[#111] dark:bg-slate-100 dark:text-slate-900 text-white rounded-2xl font-bold hover:bg-black dark:hover:bg-white transition-all shadow-lg flex items-center gap-2 group whitespace-nowrap"
+              className="px-6 py-3 bg-[#111] dark:bg-slate-100 dark:text-slate-900 text-white rounded-2xl font-bold hover:bg-black dark:hover:bg-white transition-all shadow-lg flex items-center justify-center gap-2 group whitespace-nowrap"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
               Create New Resume
             </Link>
           </header>
 
-          <div className="grid lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
             {/* Main Content: Resume List */}
             <div className="lg:col-span-2 space-y-8">
               <section>
@@ -134,12 +139,13 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                   {resumes.length > 0 ? (
                     resumesToDisplay.map((resume, index) => (
                       <div key={resume.id || index} className="relative group h-72 bg-card border border-slate-200 dark:border-[#444444] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
                         <DashboardPreview data={resume} template={resume.template} />
-                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                        {/* Mobile Action Buttons (Visible by default on small screens) */}
+                        <div className="absolute top-4 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 transition-all transform md:translate-y-2 md:group-hover:translate-y-0">
                           <button 
                             onClick={() => handleEdit(resume)}
                             className="p-2 bg-white dark:bg-[#121212] border border-slate-200 dark:border-[#444444] rounded-lg shadow-sm hover:text-[#0ea5e9] transition-colors"
@@ -158,7 +164,7 @@ export default function Dashboard() {
                       </div>
                     ))
                   ) : (
-                    <div className="col-span-full py-20 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-3xl flex flex-col items-center justify-center text-center">
+                    <div className="col-span-full py-20 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-3xl flex flex-col items-center justify-center text-center px-4">
                       <div className="w-16 h-16 bg-slate-50 dark:bg-zinc-900 rounded-full flex items-center justify-center text-2xl mb-4">📄</div>
                       <h3 className="text-lg font-bold mb-1">No resumes yet</h3>
                       <p className="text-muted-foreground mb-6 max-w-xs">Create your first professional resume with our AI builder.</p>
@@ -170,7 +176,7 @@ export default function Dashboard() {
             </div>
 
             {/* Sidebar: Stats & CTA */}
-            <div className="space-y-8">
+            <div className="space-y-8 pb-10">
               <div className="p-8 bg-card border border-slate-200 dark:border-zinc-800 rounded-3xl shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-[#0ea5e9]/10 rounded-bl-full transform translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform" />
                 <h3 className="text-lg font-bold mb-4 relative z-10">AI Mock Interview</h3>

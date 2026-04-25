@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Sidebar from '../components/Sidebar';
+import MobileNav from '../components/MobileNav';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -54,7 +56,9 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 md:p-8 flex justify-center relative overflow-hidden transition-colors duration-300 pb-24 md:pb-8">
+    <div className="h-screen flex flex-col md:flex-row overflow-hidden bg-background text-foreground transition-colors duration-300">
+      <Sidebar />
+      <MobileNav />
       
       {/* Success Toast */}
       <AnimatePresence>
@@ -63,7 +67,7 @@ export default function Profile() {
             initial={{ opacity: 0, y: 50, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 20, x: '-50%' }}
-            className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl z-[100] flex items-center gap-3 font-bold text-sm"
+            className="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl z-[100] flex items-center gap-3 font-bold text-sm"
           >
             <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-[10px]">✓</div>
             Changes saved successfully!
@@ -71,9 +75,10 @@ export default function Profile() {
         )}
       </AnimatePresence>
 
-      <div className="w-full max-w-4xl relative z-10">
-        <div className="mb-10 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
+      <main className="flex-1 overflow-y-auto pb-24 md:pb-0 px-4 md:px-8 py-8 md:py-12">
+        <div className="w-full max-w-4xl mx-auto relative z-10">
+          <div className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h1 className="text-3xl font-extrabold tracking-tight">Account Settings</h1>
           <Link to={backPath} className="text-sm text-[#0ea5e9] hover:text-[#0284c7] dark:text-[#38bdf8] dark:hover:text-[#7dd3fc] font-semibold flex items-center gap-2 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             {backPath === '/' ? 'Back to Home' : 'Back to Dashboard'}

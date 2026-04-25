@@ -18,7 +18,6 @@ import InterviewResults from './pages/InterviewResults';
 import Pricing from './pages/Pricing';
 import Profile from './pages/Profile';
 import History from './pages/History';
-import Navbar from './components/Navbar';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -35,7 +34,6 @@ export default function App() {
         <ResumeProvider>
           <BrowserRouter>
             <ScrollToTop />
-            <Navbar />
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/about" element={<About />} />

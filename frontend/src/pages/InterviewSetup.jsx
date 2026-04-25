@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
+import MobileNav from '../components/MobileNav';
 
 // Static loading messages moved outside to satisfy linting and optimize performance
 const loadingMessages = [
@@ -17,6 +18,7 @@ const loadingMessages = [
 ];
 
 export default function InterviewSetup() {
+  // ... (keep state) ...
   const [file, setFile] = useState(null);
   const [jd, setJd] = useState('');
   const [mode, setMode] = useState('Resume + JD');
@@ -36,7 +38,7 @@ export default function InterviewSetup() {
       }, 1500); // Change every 1.5 seconds for readability
     }
     return () => clearInterval(interval);
-  }, [isUploading]); // Removed loadingMessages as it is static and would cause unnecessary re-renders
+  }, [isUploading]);
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -44,19 +46,15 @@ export default function InterviewSetup() {
 
   const handleStart = async () => {
     setIsUploading(true);
-
     try {
-      // 1. Prepare FormData
       const formData = new FormData();
       const backendMode = mode === 'Resume Only' ? 'resume' : mode === 'JD Only' ? 'jd' : 'both';
       formData.append('mode', backendMode);
       formData.append('difficulty', difficulty.toLowerCase());
       formData.append('max_questions', questionsCount);
       if (user?.email) formData.append('userEmail', user.email);
-      
       if (file) formData.append('resume', file);
       if (jd) {
-        // Create a temporary blob if it's text, or if it's already a file object
         if (typeof jd === 'string') {
           const blob = new Blob([jd], { type: 'text/plain' });
           formData.append('jd', blob, 'jd.txt');
@@ -64,49 +62,33 @@ export default function InterviewSetup() {
           formData.append('jd', jd);
         }
       }
-
-      // 2. Upload and Ingest
       const uploadRes = await axios.post(`${API}/upload`, formData);
       const sessionId = uploadRes.data.session_id;
-
-      // 3. Start Interview
       const startRes = await axios.post(`${API}/start?session_id=${sessionId}&difficulty=${difficulty.toLowerCase()}`);
-      
       const { question, total_questions, time_limit } = startRes.data;
-
-      // 4. Navigate to Experience page with all data
       navigate('/interview/start', { 
-        state: { 
-          sessionId,
-          firstQuestion: question,
-          totalQuestions: total_questions,
-          timeLimit: time_limit,
-          mode, 
-          difficulty
-        } 
+        state: { sessionId, firstQuestion: question, totalQuestions: total_questions, timeLimit: time_limit, mode, difficulty } 
       });
     } catch (error) {
       console.error("Setup Error:", error);
-      alert(`Failed to process interview setup: ${error.response?.data?.detail || error.message}`);
     } finally {
       setIsUploading(false);
     }
   };
 
-  const isReady = (mode === 'Resume Only' && file) || 
-                  (mode === 'JD Only' && jd) || 
-                  (mode === 'Resume + JD' && file && jd);
+  const isReady = (mode === 'Resume Only' && file) || (mode === 'JD Only' && jd) || (mode === 'Resume + JD' && file && jd);
 
   return (
-    <div className="h-screen flex overflow-hidden text-foreground bg-background">
+    <div className="h-screen flex flex-col md:flex-row overflow-hidden text-foreground bg-background">
       <Sidebar />
+      <MobileNav />
       
-      <main className="flex-1 overflow-y-auto">
-        <div className="w-full px-8 md:px-12 lg:px-16 pb-16 max-w-7xl mx-auto">
-          <div className="h-24 flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">Configure Interview</h1>
+      <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
+        <div className="w-full px-6 md:px-12 lg:px-16 py-8 md:py-16 max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+            <h1 className="text-3xl font-extrabold tracking-tight">Configure Interview</h1>
             
-            <div className="flex items-center gap-4 bg-card p-2 px-4 rounded-2xl border border-slate-200 dark:border-[#444444] shadow-sm">
+            <div className="flex items-center justify-between md:justify-end gap-4 bg-card p-2 px-4 rounded-2xl border border-slate-200 dark:border-[#444444] shadow-sm">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">No. of Questions:</span>
                 <select 
                   value={questionsCount}

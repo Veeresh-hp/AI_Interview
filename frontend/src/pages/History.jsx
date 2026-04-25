@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Sidebar from '../components/Sidebar';
+import MobileNav from '../components/MobileNav';
 
 export default function History() {
   const [interviews, setInterviews] = useState([]);
@@ -28,11 +30,14 @@ export default function History() {
   };
 
   return (
-    <div className="min-h-screen text-foreground bg-background">
-      <main className="flex-1 overflow-y-auto pb-24 md:pb-8">
-        <div className="w-full px-6 md:px-12 lg:px-16 max-w-7xl mx-auto">
-          <div className="h-20 md:h-24 flex items-center mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Interview History</h1>
+    <div className="h-screen flex flex-col md:flex-row overflow-hidden text-foreground bg-background">
+      <Sidebar />
+      <MobileNav />
+      
+      <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
+        <div className="w-full px-6 md:px-12 lg:px-16 py-8 md:py-16 max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+            <h1 className="text-3xl font-extrabold tracking-tight">Interview History</h1>
           </div>
 
           {loading ? (
