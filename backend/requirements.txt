@@ -11,3 +11,4 @@ python-dotenv
 groq
 tavily-python
 pymongo[srv]
+gunicorn
