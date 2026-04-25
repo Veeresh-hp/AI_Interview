@@ -11,7 +11,7 @@ export default function InterviewExperience() {
   const [timeLeft, setTimeLeft] = useState(90);
   const navigate = useNavigate();
   const location = useLocation();
-  const API = 'http://localhost:8000';
+  const API = '/api';
 
   useEffect(() => {
     const { firstQuestion, timeLimit } = location.state || {};

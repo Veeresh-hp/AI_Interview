@@ -11,7 +11,8 @@ export default function History() {
 
   useEffect(() => {
     if (!user?.email) return;
-    fetch(`http://localhost:8000/history?userEmail=${user.email}`)
+    const API_BASE = '/api';
+    fetch(`${API_BASE}/history?userEmail=${user.email}`)
       .then(res => res.json())
       .then(data => {
         setInterviews(data);

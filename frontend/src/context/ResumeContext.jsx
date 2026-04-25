@@ -29,7 +29,7 @@ export const ResumeProvider = ({ children }) => {
     const saveResumeData = useCallback(async (status = 'draft') => {
         setSaveStatus('Saving...');
         try {
-            const response = await fetch('http://localhost:8000/api/resumes', {
+            const response = await fetch('/api/resumes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

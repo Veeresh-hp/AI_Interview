@@ -9,7 +9,7 @@ export default function InterviewResults() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const API = 'http://localhost:8000';
+  const API = '/api';
 
   useEffect(() => {
     const { sessionId } = location.state || {};

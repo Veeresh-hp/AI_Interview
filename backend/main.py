@@ -61,7 +61,7 @@ class AnswerRequest(BaseModel):
     session_id: str
     answer: str
 
-@app.post("/upload")
+@app.post("/api/upload")
 async def upload_files(
     mode: str = Form(...),
     difficulty: str = Form(...),
@@ -113,7 +113,7 @@ async def upload_files(
         
     return {"session_id": session_id}
 
-@app.post("/start")
+@app.post("/api/start")
 async def start_interview(session_id: str = Query(...), difficulty: str = Query(...)):
     session_data = sessions_col.find_one({"_id": session_id})
     if not session_data:
@@ -134,7 +134,7 @@ async def start_interview(session_id: str = Query(...), difficulty: str = Query(
         "time_limit": session_data["time_limit"]
     }
 
-@app.post("/answer")
+@app.post("/api/answer")
 async def submit_answer(req: AnswerRequest):
     session_data = sessions_col.find_one({"_id": req.session_id})
     if not session_data:
@@ -185,7 +185,7 @@ async def submit_answer(req: AnswerRequest):
         "question_number": new_count
     }
 
-@app.get("/report")
+@app.get("/api/report")
 async def get_report(session_id: str = Query(...)):
     session_data = sessions_col.find_one({"_id": session_id})
     if not session_data:
@@ -201,7 +201,7 @@ async def get_report(session_id: str = Query(...)):
 import glob
 from datetime import datetime
 
-@app.get("/history")
+@app.get("/api/history")
 async def get_history(userEmail: Optional[str] = Query(None)):
     query = {"userEmail": userEmail} if userEmail else {}
     results = sessions_col.find(query).sort("createdAt", -1)

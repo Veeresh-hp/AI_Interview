@@ -25,7 +25,7 @@ export default function Dashboard() {
   const fetchResumes = useCallback(async () => {
     if (!user?.email) return;
     try {
-      const response = await fetch(`http://localhost:8000/api/resumes?userEmail=${user.email}`);
+      const response = await fetch(`/api/resumes?userEmail=${user.email}`);
       const data = await response.json();
       setResumes(data);
     } catch (err) {
@@ -38,7 +38,7 @@ export default function Dashboard() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this resume?")) return;
     try {
-      await fetch(`http://localhost:8000/api/resumes/${id}`, { method: 'DELETE' });
+      await fetch(`/api/resumes/${id}`, { method: 'DELETE' });
       setResumes(resumes.filter(r => r._id !== id));
       setOpenMenuId(null);
     } catch (err) {

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
     const loading = false;
 
     const login = async (email, password) => {
-        const response = await fetch('http://localhost:8000/api/auth/login', {
+        const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (name, email, password) => {
-        const response = await fetch('http://localhost:8000/api/auth/register', {
+        const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password })

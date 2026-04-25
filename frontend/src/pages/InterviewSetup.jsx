@@ -16,7 +16,7 @@ export default function InterviewSetup() {
   
   const navigate = useNavigate();
 
-  const API = 'http://localhost:8000';
+  const API = '/api';
 
   const handleStart = async () => {
     setIsUploading(true);
