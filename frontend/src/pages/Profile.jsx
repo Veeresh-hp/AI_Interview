@@ -246,7 +246,7 @@ export default function Profile() {
             </motion.div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

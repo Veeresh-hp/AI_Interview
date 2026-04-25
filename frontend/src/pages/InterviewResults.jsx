@@ -289,7 +289,8 @@ export default function InterviewResults() {
           <h2 className="text-2xl font-bold mb-4">No results found</h2>
           <Link to="/dashboard" className="text-[#0ea5e9] font-bold">Return to Dashboard</Link>
         </div>
-      )}
+        </div>
+      </main>
     </div>
   );
 }
