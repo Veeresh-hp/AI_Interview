@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -36,7 +36,11 @@ export default function InterviewSetup() {
       }, 1500); // Change every 1.5 seconds for readability
     }
     return () => clearInterval(interval);
-  }, [isUploading]);
+  }, [isUploading]); // Removed loadingMessages as it is static and would cause unnecessary re-renders
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const API = '/api';
 
   const handleStart = async () => {
     setIsUploading(true);
