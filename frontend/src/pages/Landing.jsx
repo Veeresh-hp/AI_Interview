@@ -20,24 +20,19 @@ import { useAuth } from '../hooks/useAuth';
 export default function Landing() {
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated, user, logout } = useAuth();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const profileMenuRef = useRef(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setShowProfileMenu(false);
       }
     };
-
     window.addEventListener('scroll', handleScroll);
     document.addEventListener('mousedown', handleClickOutside);
-    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
@@ -49,21 +44,22 @@ export default function Landing() {
       
       {/* Navigation Pill */}
       <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 w-full flex justify-center px-8 py-4 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 w-full flex justify-center px-4 md:px-8 py-4 ${
           isScrolled ? 'backdrop-blur-md bg-white/70 dark:bg-black/70 py-3 shadow-md' : 'bg-transparent'
         }`}
       >
-        <nav className={`w-full max-w-[1300px] px-8 md:px-12 py-3 rounded-full flex items-center justify-between border transition-all duration-500 ${
+        <nav className={`w-full max-w-[1300px] px-6 md:px-12 py-3 rounded-full flex items-center justify-between border transition-all duration-500 ${
           isScrolled 
             ? 'bg-transparent border-transparent shadow-none' 
             : 'bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-slate-100 dark:border-[#444444]'
         }`}>
-          <div className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <span className="w-6 h-6 border-2 border-slate-900 bg-slate-900 dark:border-[#E0E0E0] dark:bg-[#E0E0E0] dark:text-[#121212] text-white rounded flex items-center justify-center text-[10px] tracking-tighter">AI</span>
+          <div className="text-lg md:text-xl font-bold tracking-tight flex items-center gap-2">
+            <span className="w-5 h-5 md:w-6 md:h-6 border-2 border-slate-900 bg-slate-900 dark:border-[#E0E0E0] dark:bg-[#E0E0E0] dark:text-[#121212] text-white rounded flex items-center justify-center text-[8px] md:text-[10px] tracking-tighter">AI</span>
             AI Interview
           </div>
-          <div className="hidden md:flex items-center gap-10 text-sm font-semibold text-slate-600 dark:text-slate-400">
-            {/* Products Dropdown */}
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-10 text-sm font-semibold text-slate-600 dark:text-slate-400">
             <div className="relative group py-2">
               <button className="flex items-center gap-1 hover:text-[#0ea5e9] transition-colors focus:outline-none">
                 Products 
@@ -78,68 +74,81 @@ export default function Landing() {
                 </Link>
               </div>
             </div>
-
-            {/* Dashboard & Pricing */}
             {isAuthenticated && (
               <Link to="/dashboard" className="hover:text-[#0ea5e9] transition-colors py-2">Dashboard</Link>
             )}
             <Link to="/pricing" className="hover:text-[#0ea5e9] transition-colors py-2">Pricing</Link>
           </div>
-          <div className="flex items-center gap-4">
+
+          <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={toggleTheme}
-              className="p-2.5 rounded-full bg-slate-100 dark:bg-[#27272a] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#333] transition-colors"
+              className="p-2 md:p-2.5 rounded-full bg-slate-100 dark:bg-[#27272a] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#333] transition-colors"
               aria-label="Toggle Theme"
             >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            
+            {/* Mobile Menu Toggle */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={mobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} /></svg>
+            </button>
+
             {isAuthenticated ? (
-              <div className="relative" ref={profileMenuRef}>
+              <div className="hidden md:block relative" ref={profileMenuRef}>
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="w-10 h-10 rounded-full bg-[#f0f9ff] dark:bg-zinc-800 border border-[#bae6fd] dark:border-zinc-700 text-[#0ea5e9] flex items-center justify-center font-bold text-sm hover:scale-105 transition-transform shadow-md uppercase"
                 >
                   {user?.name ? user.name.substring(0, 2) : <Users size={18} />}
                 </button>
-                
                 {showProfileMenu && (
                   <div className="absolute right-0 mt-3 w-48 bg-card border border-slate-100 dark:border-[#444444] shadow-xl rounded-2xl py-2 z-50 overflow-hidden animate-in fade-in zoom-in duration-200">
                     <div className="px-4 py-2 border-b border-slate-50 dark:border-[#444444] mb-1">
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Account</p>
                       <p className="text-sm font-bold truncate text-foreground">{user?.name || 'User'}</p>
                     </div>
-                    <Link 
-                      to="/dashboard" 
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-[#f0f9ff] dark:hover:bg-[#1e1e1e] text-foreground transition-colors"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                       📊 Dashboard
-                    </Link>
-                    <Link 
-                      to="/profile" 
-                      state={{ from: '/' }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-[#f0f9ff] dark:hover:bg-[#1e1e1e] text-foreground transition-colors"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                       👤 Profile
-                    </Link>
+                    <Link to="/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-[#f0f9ff] dark:hover:bg-[#1e1e1e] text-foreground transition-colors" onClick={() => setShowProfileMenu(false)}>📊 Dashboard</Link>
+                    <Link to="/profile" state={{ from: '/' }} className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-[#f0f9ff] dark:hover:bg-[#1e1e1e] text-foreground transition-colors" onClick={() => setShowProfileMenu(false)}>👤 Profile</Link>
                     <hr className="border-slate-50 dark:border-[#444444] my-1" />
-                    <button 
-                      onClick={() => { logout(); setShowProfileMenu(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    >
-                       🚪 Logout
-                    </button>
+                    <button onClick={() => { logout(); setShowProfileMenu(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">🚪 Logout</button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link to="/auth" className="bg-[#111] dark:bg-[#E0E0E0] dark:text-[#121212] text-white px-8 py-3 rounded-full text-sm font-semibold hover:bg-black dark:hover:bg-white transition-colors shadow-md">
+              <Link to="/auth" className="hidden md:block bg-[#111] dark:bg-[#E0E0E0] dark:text-[#121212] text-white px-8 py-3 rounded-full text-sm font-semibold hover:bg-black dark:hover:bg-white transition-colors shadow-md">
                 Get Started
               </Link>
             )}
           </div>
         </nav>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute top-20 left-4 right-4 bg-card border border-slate-200 dark:border-[#444444] rounded-3xl shadow-2xl p-6 lg:hidden flex flex-col gap-4 z-[100]"
+            >
+              <Link to="/resume-builder" className="p-4 bg-background-alt rounded-2xl font-bold flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>📄 Resume Builder</Link>
+              <Link to="/interview" className="p-4 bg-background-alt rounded-2xl font-bold flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>🎙️ Mock Interviews</Link>
+              <Link to="/pricing" className="p-4 bg-background-alt rounded-2xl font-bold flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>💰 Pricing</Link>
+              {isAuthenticated ? (
+                <>
+                  <Link to="/dashboard" className="p-4 bg-background-alt rounded-2xl font-bold flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>📊 Dashboard</Link>
+                  <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="p-4 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl font-bold flex items-center gap-3">🚪 Logout</button>
+                </>
+              ) : (
+                <Link to="/auth" className="p-4 bg-[#111] dark:bg-[#E0E0E0] dark:text-[#121212] text-white rounded-2xl font-bold text-center" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Background soft glow */ }

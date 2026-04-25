@@ -58,18 +58,18 @@ const TemplateSelector = () => {
   const { selectTemplate, formData, showGitHub } = useResume();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-8 py-16 overflow-y-auto transition-colors">
+    <div className="min-h-screen bg-background flex flex-col items-center p-4 md:p-8 py-10 md:py-16 overflow-y-auto transition-colors">
       <div className="max-w-[1240px] w-full">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6 px-4"
+          className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16 gap-6 px-4"
         >
           <div>
-            <h1 className="text-5xl font-black text-foreground tracking-tighter mb-3">Resume Gallery</h1>
-            <p className="text-[14px] text-slate-400 dark:text-[#B0B0B0] font-bold uppercase tracking-[0.3em] ml-1">Select your design foundation</p>
+            <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tighter mb-2 md:mb-3">Resume Gallery</h1>
+            <p className="text-[12px] md:text-[14px] text-slate-400 dark:text-[#B0B0B0] font-bold uppercase tracking-[0.3em] ml-1">Select your design foundation</p>
           </div>
-          <Link to="/dashboard" className="px-8 py-4 bg-card border border-slate-200 dark:border-[#444444] text-foreground rounded-2xl font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-all text-[12px] shadow-sm flex items-center gap-2 group">
+          <Link to="/dashboard" className="w-full md:w-auto px-8 py-4 bg-card border border-slate-200 dark:border-[#444444] text-foreground rounded-2xl font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-[#2a2a2a] transition-all text-[12px] shadow-sm flex items-center justify-center md:justify-start gap-2 group">
              <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
              Dashboard
           </Link>
