@@ -21,8 +21,8 @@ export const AuthProvider = ({ children }) => {
                 const error = await response.json();
                 errorMsg = error.detail || errorMsg;
             } catch {
-                // If response is not JSON
-                errorMsg = await response.text() || errorMsg;
+                // If it's not JSON, it might be a text error from the proxy
+                errorMsg = 'Server error. Please make sure the backend is running.';
             }
             throw new Error(errorMsg);
         }
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
                 const error = await response.json();
                 errorMsg = error.detail || errorMsg;
             } catch {
-                errorMsg = await response.text() || errorMsg;
+                errorMsg = 'Server error. Please make sure the backend is running.';
             }
             throw new Error(errorMsg);
         }

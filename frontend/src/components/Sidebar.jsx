@@ -70,7 +70,7 @@ export default function Sidebar() {
         </button>
 
         <div className="flex items-center justify-between gap-3 group">
-          <Link to="/profile" className="flex items-center gap-3 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer -mx-3 px-3 py-2 flex-1 min-w-0">
+          <Link to="/profile" state={{ from: '/dashboard' }} className="flex items-center gap-3 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer -mx-3 px-3 py-2 flex-1 min-w-0">
             <div className="w-10 h-10 rounded-full bg-[#f0f9ff] dark:bg-[#242424] border border-[#bae6fd] dark:border-[#444444] text-[#0ea5e9] flex items-center justify-center font-bold text-sm shrink-0 uppercase">
               {user?.name?.substring(0, 2) || 'JD'}
             </div>

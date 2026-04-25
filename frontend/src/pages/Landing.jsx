@@ -97,9 +97,9 @@ export default function Landing() {
               <div className="relative" ref={profileMenuRef}>
                 <button 
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="w-10 h-10 rounded-full bg-slate-900 dark:bg-[#E0E0E0] dark:text-[#121212] text-white flex items-center justify-center font-bold text-sm hover:scale-105 transition-transform shadow-md"
+                  className="w-10 h-10 rounded-full bg-[#f0f9ff] dark:bg-zinc-800 border border-[#bae6fd] dark:border-zinc-700 text-[#0ea5e9] flex items-center justify-center font-bold text-sm hover:scale-105 transition-transform shadow-md uppercase"
                 >
-                  {user?.name ? user.name[0].toUpperCase() : <Users size={18} />}
+                  {user?.name ? user.name.substring(0, 2) : <Users size={18} />}
                 </button>
                 
                 {showProfileMenu && (
@@ -117,6 +117,7 @@ export default function Landing() {
                     </Link>
                     <Link 
                       to="/profile" 
+                      state={{ from: '/' }}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold hover:bg-[#f0f9ff] dark:hover:bg-[#1e1e1e] text-foreground transition-colors"
                       onClick={() => setShowProfileMenu(false)}
                     >

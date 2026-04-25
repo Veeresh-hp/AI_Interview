@@ -9,7 +9,8 @@ import TemplateLunar from './templates/TemplateLunar';
 
 const DashboardPreview = ({ data, template }) => {
   const getTemplate = () => {
-    const props = { data, showGitHub: !!data?.github };
+    const resumeData = data?.structuredData || data;
+    const props = { data: resumeData, showGitHub: !!resumeData?.github };
     switch (template) {
       case 'modern': return <TemplateModern {...props} />;
       case 'latex': return <TemplateLaTeX {...props} />;
@@ -28,7 +29,7 @@ const DashboardPreview = ({ data, template }) => {
         className="origin-top-left"
         style={{ 
           width: '800px', // Fixed width to render template consistently
-          transform: 'scale(0.26)', // Scale down to fit dashboard card
+          transform: 'scale(0.28)', // Compact scale for h-72 dashboard cards
           pointerEvents: 'none'
         }}
       >

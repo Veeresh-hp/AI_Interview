@@ -82,15 +82,25 @@ export default function History() {
                     </div>
 
                     <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-zinc-800">
-                      <div className="flex gap-4">
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{interview.qna.length} Questions</span>
+                      <div className="flex gap-4 items-center">
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          {interview.qna.length} {interview.qna.length === 1 ? 'Question' : 'Questions'}
+                        </span>
+                        {interview.qna.length === 0 && (
+                          <span className="text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight">Not Started</span>
+                        )}
                         <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{interview.mode || 'Standard'}</span>
                       </div>
                       <button 
+                        disabled={interview.qna.length === 0}
                         onClick={() => viewReport(interview._id)}
-                        className="text-sm font-bold text-[#0ea5e9] hover:underline flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                        className={`text-sm font-bold flex items-center gap-1 transition-all ${
+                          interview.qna.length === 0 
+                            ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed' 
+                            : 'text-[#0ea5e9] hover:underline group-hover:translate-x-1'
+                        }`}
                       >
-                        View Report
+                        {interview.qna.length === 0 ? 'No Data' : 'View Report'}
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
                       </button>
                     </div>

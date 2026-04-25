@@ -1,17 +1,33 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Profile() {
-  const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('john@student.edu');
+  const { user } = useAuth();
+  const location = useLocation();
+  const backPath = location.state?.from || '/dashboard';
+  
+  const [profileData, setProfileData] = useState({ name: '', email: '' });
+  const [editForm, setEditForm] = useState({ name: '', email: '' });
+  const [prevUser, setPrevUser] = useState(null);
+
+  // Sync state when user loads (during render to avoid useEffect warnings)
+  if (user !== prevUser) {
+    setPrevUser(user);
+    if (user && !profileData.name) {
+      const data = { name: user.name, email: user.email };
+      setProfileData(data);
+      setEditForm(data);
+    }
+  }
+  
   const [isSaving, setIsSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: 'John Doe', email: 'john@student.edu' });
 
   const handleEdit = () => {
-    setEditForm({ name, email });
+    setEditForm({ name: profileData.name, email: profileData.email });
     setIsEditing(true);
   };
 
@@ -23,8 +39,7 @@ export default function Profile() {
     setIsSaving(true);
     // Simulate API call
     setTimeout(() => {
-      setName(editForm.name);
-      setEmail(editForm.email);
+      setProfileData({ name: editForm.name, email: editForm.email });
       setIsSaving(false);
       setIsEditing(false);
       setShowToast(true);
@@ -59,9 +74,9 @@ export default function Profile() {
       <div className="w-full max-w-4xl relative z-10">
         <div className="mb-10 flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Account Settings</h1>
-          <Link to="/dashboard" className="text-sm text-[#0ea5e9] hover:text-[#0284c7] dark:text-[#38bdf8] dark:hover:text-[#7dd3fc] font-semibold flex items-center gap-2 transition-colors">
+          <Link to={backPath} className="text-sm text-[#0ea5e9] hover:text-[#0284c7] dark:text-[#38bdf8] dark:hover:text-[#7dd3fc] font-semibold flex items-center gap-2 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back to Dashboard
+            {backPath === '/' ? 'Back to Home' : 'Back to Dashboard'}
           </Link>
         </div>
 
@@ -74,10 +89,10 @@ export default function Profile() {
               className="p-8 bg-card border border-theme shadow-sm rounded-3xl text-center transition-colors duration-300"
             >
               <div className="w-24 h-24 rounded-full bg-[#f0f9ff] dark:bg-zinc-800 border-2 border-[#bae6fd] dark:border-zinc-700 text-[#0ea5e9] dark:text-[#38bdf8] flex items-center justify-center font-bold text-3xl mx-auto mb-4 overflow-hidden">
-                {name.split(' ').map(n => n[0]).join('')}
+                {profileData.name ? profileData.name.split(' ').map(n => n[0]).join('') : 'U'}
               </div>
-              <h2 className="text-xl font-bold">{name}</h2>
-              <p className="text-sm text-muted-foreground font-medium mb-6">{email}</p>
+              <h2 className="text-xl font-bold">{profileData.name}</h2>
+              <p className="text-sm text-muted-foreground font-medium mb-6">{profileData.email}</p>
               <button 
                 onClick={() => alert('Avatar upload logic goes here.')} 
                 className="w-full py-2.5 bg-background-alt border border-theme rounded-xl text-sm font-bold text-foreground hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
@@ -136,7 +151,7 @@ export default function Profile() {
                     />
                   ) : (
                     <div className="w-full bg-transparent border border-transparent px-2 py-3 text-sm font-bold text-foreground">
-                      {name}
+                      {profileData.name}
                     </div>
                   )}
                 </div>
@@ -151,7 +166,7 @@ export default function Profile() {
                     />
                   ) : (
                     <div className="w-full bg-transparent border border-transparent px-2 py-3 text-sm font-bold text-foreground">
-                      {email}
+                      {profileData.email}
                     </div>
                   )}
                 </div>
