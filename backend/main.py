@@ -1,6 +1,4 @@
 import os
-os.environ["USE_TORCH"] = "1"
-os.environ["USE_TF"] = "0"
 import uuid
 import json
 import shutil
