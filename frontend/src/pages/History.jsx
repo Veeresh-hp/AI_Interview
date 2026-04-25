@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import Sidebar from '../components/Sidebar';
 
 export default function History() {
   const [interviews, setInterviews] = useState([]);
@@ -29,13 +28,11 @@ export default function History() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden text-foreground bg-background">
-      <Sidebar />
-      
-      <main className="flex-1 overflow-y-auto">
-        <div className="w-full px-8 md:px-12 lg:px-16 pb-16 max-w-7xl">
-          <div className="h-24 flex items-center mb-6">
-            <h1 className="text-3xl font-bold tracking-tight">Interview History</h1>
+    <div className="min-h-screen text-foreground bg-background">
+      <main className="flex-1 overflow-y-auto pb-24 md:pb-8">
+        <div className="w-full px-6 md:px-12 lg:px-16 max-w-7xl mx-auto">
+          <div className="h-20 md:h-24 flex items-center mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Interview History</h1>
           </div>
 
           {loading ? (

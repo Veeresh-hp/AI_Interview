@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
-import Sidebar from '../components/Sidebar';
 import DashboardPreview from '../components/resume/DashboardPreview';
 import { useResume } from '../hooks/useResume';
 import { useAuth } from '../hooks/useAuth';
@@ -90,10 +89,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-background text-foreground transition-colors duration-300">
-      <Sidebar />
-      
-      <main className="flex-1 overflow-y-auto relative">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      <main className="flex-1 overflow-y-auto relative pb-24 md:pb-8">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-sky-500/5 to-transparent pointer-events-none -z-10" />
         

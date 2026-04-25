@@ -54,7 +54,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-8 flex justify-center relative overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground p-4 md:p-8 flex justify-center relative overflow-hidden transition-colors duration-300 pb-24 md:pb-8">
       
       {/* Success Toast */}
       <AnimatePresence>

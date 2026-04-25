@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useResume } from '../hooks/useResume';
 import { useAuth } from '../hooks/useAuth';
@@ -22,17 +22,9 @@ const templates = {
 };
 
 export default function ResumeBuilder() {
-  const { 
-    formData, 
-    template, 
-    handleChange, 
-    saveResumeData, 
-    resetLayout,
-    saveStatus,
-    showGitHub,
-    setShowGitHub,
     setFormData
   } = useResume();
+  const [activeTab, setActiveTab] = useState('editor'); // 'editor' or 'preview'
 
   const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -82,10 +74,30 @@ export default function ResumeBuilder() {
   };
 
   return (
-    <div className="h-screen flex bg-background text-foreground overflow-hidden font-sans transition-colors">
+    <div className="h-screen flex flex-col md:flex-row bg-background text-foreground overflow-hidden font-sans transition-colors relative">
       
-      {/* 1. Navigation Sidebar */}
-      <div className="w-20 bg-background-alt border-r border-slate-200 dark:border-[#444444] flex flex-col items-center py-6 gap-8 z-20 shrink-0 transition-colors">
+      {/* Mobile Tab Switcher */}
+      <div className="md:hidden flex bg-card border-b border-slate-200 dark:border-[#333] sticky top-0 z-50">
+        <button 
+          onClick={() => setActiveTab('editor')}
+          className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${
+            activeTab === 'editor' ? 'text-[#0ea5e9] border-b-2 border-[#0ea5e9]' : 'text-slate-400'
+          }`}
+        >
+          Edit Details
+        </button>
+        <button 
+          onClick={() => setActiveTab('preview')}
+          className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${
+            activeTab === 'preview' ? 'text-[#0ea5e9] border-b-2 border-[#0ea5e9]' : 'text-slate-400'
+          }`}
+        >
+          Live Preview
+        </button>
+      </div>
+
+      {/* 1. Navigation Sidebar - Only on Desktop */}
+      <div className="hidden md:flex w-20 bg-background-alt border-r border-slate-200 dark:border-[#444444] flex-col items-center py-6 gap-8 z-20 shrink-0 transition-colors">
         <Link to="/dashboard" className="w-12 h-12 rounded-2xl bg-card flex items-center justify-center text-slate-600 dark:text-[#B0B0B0] hover:text-foreground hover:bg-slate-100 dark:hover:bg-[#2a2a2a] transition-all border border-slate-200 dark:border-[#444444] shadow-sm" title="Back to Dashboard">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         </Link>
@@ -101,7 +113,9 @@ export default function ResumeBuilder() {
       </div>
 
       {/* 2. Editor Pane */}
-      <div className="w-[450px] xl:w-[500px] bg-card border-r border-slate-200 dark:border-[#444444] flex flex-col h-screen overflow-y-auto shrink-0 z-10 shadow-sm transition-colors">
+      <div className={`w-full md:w-[450px] xl:w-[500px] bg-card md:border-r border-slate-200 dark:border-[#444444] flex flex-col h-full overflow-y-auto shrink-0 z-10 shadow-sm transition-colors ${
+        activeTab === 'editor' ? 'flex' : 'hidden md:flex'
+      }`}>
         <div className="p-8 border-b border-slate-100 dark:border-[#2a2a2a] sticky top-0 bg-card/95 backdrop-blur-sm z-10">
            <h1 className="text-2xl font-bold tracking-tight text-foreground">Content Editor</h1>
            <p className="text-sm text-slate-500 dark:text-[#B0B0B0] font-medium mt-1">Refine your professional details here.</p>
@@ -224,9 +238,11 @@ export default function ResumeBuilder() {
       </div>
 
       {/* 3. Preview Pane */}
-      <div className="flex-1 h-screen overflow-y-auto bg-background-alt flex flex-col items-center p-12 transition-colors">
+      <div className={`flex-1 h-full overflow-y-auto bg-background-alt flex flex-col items-center p-4 md:p-12 transition-colors ${
+        activeTab === 'preview' ? 'flex' : 'hidden md:flex'
+      }`}>
         {/* Toolbar */}
-        <div className="w-full max-w-[850px] flex justify-between items-center mb-10 shrink-0">
+        <div className="w-full max-w-[850px] flex flex-col sm:flex-row justify-between items-center mb-10 shrink-0 gap-6 sm:gap-0">
            <div className="flex items-center gap-3">
               <button 
                 onClick={resetLayout}
@@ -264,7 +280,7 @@ export default function ResumeBuilder() {
         <div className="w-full flex-1 flex justify-center">
           <div 
              ref={resumeRef} 
-             className="w-full max-w-[794px] bg-white min-h-[1123px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-[#444444] origin-top mb-24 transition-all duration-500 overflow-hidden"
+             className="w-full max-w-[794px] bg-white min-h-[1123px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-[#444444] origin-top mb-32 md:mb-24 transition-all duration-500 overflow-hidden scale-[0.9] sm:scale-100"
           >
              <SelectedTemplate data={formData} showGitHub={showGitHub} />
           </div>
