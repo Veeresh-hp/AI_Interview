@@ -10,3 +10,4 @@ sentence-transformers
 python-dotenv
 groq
 tavily-python
+pymongo[srv]

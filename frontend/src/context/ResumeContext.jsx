@@ -1,7 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useContext } from 'react';
 import { ResumeContext } from './ResumeContextDef';
+import { AuthContext } from './AuthContextDef';
 
 export const ResumeProvider = ({ children }) => {
+    const { user } = useContext(AuthContext);
     const [template, setTemplate] = useState(null);
     const [hasSelectedLayout, setHasSelectedLayout] = useState(false);
     const [saveStatus, setSaveStatus] = useState('Idle');
@@ -34,7 +36,8 @@ export const ResumeProvider = ({ children }) => {
                     filename: `${formData.name ? formData.name.replace(/\s+/g, '_') : 'My'}_Resume.pdf`,
                     structuredData: formData,
                     template: template,
-                    status: status
+                    status: status,
+                    userEmail: user?.email
                 })
             });
 
@@ -48,7 +51,7 @@ export const ResumeProvider = ({ children }) => {
             console.error("Auto-save failed:", err);
             setSaveStatus('Error');
         }
-    }, [formData, template]);
+    }, [formData, template, user?.email]);
 
     const handleChange = (e) => {
         setFormData(prev => ({...prev, [e.target.name]: e.target.value}));

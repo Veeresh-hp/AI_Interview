@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import DashboardPreview from '../components/resume/DashboardPreview';
 import { useResume } from '../hooks/useResume';
@@ -7,7 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { loadResume } = useResume();
   const [openMenuId, setOpenMenuId] = useState(null);
   const [resumes, setResumes] = useState([]);
@@ -20,11 +20,12 @@ export default function Dashboard() {
     } else if (isAuthenticated) {
       fetchResumes();
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, fetchResumes]);
 
-  const fetchResumes = async () => {
+  const fetchResumes = useCallback(async () => {
+    if (!user?.email) return;
     try {
-      const response = await fetch('http://localhost:8000/api/resumes');
+      const response = await fetch(`http://localhost:8000/api/resumes?userEmail=${user.email}`);
       const data = await response.json();
       setResumes(data);
     } catch (err) {
@@ -32,7 +33,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.email]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this resume?")) return;

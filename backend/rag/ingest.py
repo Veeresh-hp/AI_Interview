@@ -37,7 +37,9 @@ def ingest_documents(resume_path=None, jd_path=None, session_id="default"):
     embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
     
     # Create vector store
-    persist_directory = f"./chroma_db/{session_id}"
+    IS_VERCEL = os.environ.get("VERCEL") == "1"
+    BASE_DATA_DIR = "/tmp" if IS_VERCEL else "."
+    persist_directory = os.path.join(BASE_DATA_DIR, "chroma_db", session_id)
     vector_store = Chroma.from_texts(
         texts=chunks,
         embedding=embeddings,

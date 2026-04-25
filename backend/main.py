@@ -9,6 +9,10 @@ from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
+from pymongo import MongoClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from rag.ingest import ingest_documents
 from rag.retriever import retrieve_context
@@ -26,14 +30,30 @@ app.add_middleware(
 )
 
 # Directories
-UPLOADS_DIR = "uploads"
-SESSIONS_DIR = "sessions"
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+BASE_DATA_DIR = "/tmp" if IS_VERCEL else "."
+
+UPLOADS_DIR = os.path.join(BASE_DATA_DIR, "uploads")
+SESSIONS_DIR = os.path.join(BASE_DATA_DIR, "sessions")
+RESUMES_DIR = os.path.join(BASE_DATA_DIR, "resumes")
+USERS_DIR = os.path.join(BASE_DATA_DIR, "users")
+
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 os.makedirs(SESSIONS_DIR, exist_ok=True)
-RESUMES_DIR = "resumes"
 os.makedirs(RESUMES_DIR, exist_ok=True)
-USERS_DIR = "users"
 os.makedirs(USERS_DIR, exist_ok=True)
+
+# MongoDB Initialization
+MONGODB_URI = os.environ.get("MONGODB_URI")
+if not MONGODB_URI:
+    # Fallback for local testing if .env isn't loaded correctly
+    MONGODB_URI = "mongodb://localhost:27017"
+
+client = MongoClient(MONGODB_URI)
+db = client['resume_ai']
+users_col = db['users']
+resumes_col = db['resumes']
+sessions_col = db['sessions']
 
 engine = QuestionEngine()
 
@@ -46,11 +66,11 @@ async def upload_files(
     mode: str = Form(...),
     difficulty: str = Form(...),
     max_questions: Optional[int] = Form(None),
+    userEmail: Optional[str] = Form(None),
     resume: Optional[UploadFile] = File(None),
     jd: Optional[UploadFile] = File(None)
 ):
     session_id = str(uuid.uuid4())
-    session_path = os.path.join(SESSIONS_DIR, f"{session_id}.json")
     
     resume_path = None
     jd_path = None
@@ -76,6 +96,7 @@ async def upload_files(
     
     # Initialize session state
     session_data = {
+        "_id": session_id,
         "session_id": session_id,
         "mode": mode,
         "difficulty": difficulty,
@@ -83,32 +104,29 @@ async def upload_files(
         "current_question": None,
         "question_count": 0,
         "max_questions": final_max_q,
-        "time_limit": 120 if difficulty == "easy" else 90 if difficulty == "medium" else 60
+        "userEmail": userEmail,
+        "time_limit": 120 if difficulty == "easy" else 90 if difficulty == "medium" else 60,
+        "createdAt": datetime.now().isoformat()
     }
     
-    with open(session_path, "w") as f:
-        json.dump(session_data, f)
+    sessions_col.insert_one(session_data)
         
     return {"session_id": session_id}
 
 @app.post("/start")
 async def start_interview(session_id: str = Query(...), difficulty: str = Query(...)):
-    session_path = os.path.join(SESSIONS_DIR, f"{session_id}.json")
-    if not os.path.exists(session_path):
+    session_data = sessions_col.find_one({"_id": session_id})
+    if not session_data:
         raise HTTPException(status_code=404, detail="Session not found")
-        
-    with open(session_path, "r") as f:
-        session_data = json.load(f)
         
     # Retrieve context and generate first question
     context = retrieve_context("General introduction and background", session_id)
     first_question = engine.generate_initial_question(context, difficulty)
     
-    session_data["current_question"] = first_question
-    session_data["question_count"] = 1
-    
-    with open(session_path, "w") as f:
-        json.dump(session_data, f)
+    sessions_col.update_one(
+        {"_id": session_id},
+        {"$set": {"current_question": first_question, "question_count": 1}}
+    )
         
     return {
         "question": first_question,
@@ -118,12 +136,9 @@ async def start_interview(session_id: str = Query(...), difficulty: str = Query(
 
 @app.post("/answer")
 async def submit_answer(req: AnswerRequest):
-    session_path = os.path.join(SESSIONS_DIR, f"{req.session_id}.json")
-    if not os.path.exists(session_path):
+    session_data = sessions_col.find_one({"_id": req.session_id})
+    if not session_data:
         raise HTTPException(status_code=404, detail="Session not found")
-        
-    with open(session_path, "r") as f:
-        session_data = json.load(f)
         
     # Retrieve context for current question
     context = retrieve_context(session_data["current_question"], req.session_id)
@@ -131,42 +146,50 @@ async def submit_answer(req: AnswerRequest):
     # Evaluate answer and get next question
     evaluation = engine.evaluate_answer(context, session_data["current_question"], req.answer)
     
-    # Store in history
-    session_data["history"].append({
+    # Update history and session state
+    new_history_item = {
         "question": session_data["current_question"],
         "answer": req.answer,
         "score": evaluation["score"],
         "feedback": evaluation["feedback"],
         "missing": evaluation["missing"]
-    })
+    }
     
-    if session_data["question_count"] >= session_data["max_questions"]:
-        session_data["status"] = "completed"
-        with open(session_path, "w") as f:
-            json.dump(session_data, f)
-        return {"status": "completed"}
-    
+    new_count = session_data["question_count"]
+    status = "next"
     next_q = evaluation["next_question"]
-    session_data["current_question"] = next_q
-    session_data["question_count"] += 1
     
-    with open(session_path, "w") as f:
-        json.dump(session_data, f)
+    if new_count >= session_data["max_questions"]:
+        status = "completed"
+    else:
+        new_count += 1
+
+    sessions_col.update_one(
+        {"_id": req.session_id},
+        {
+            "$push": {"history": new_history_item},
+            "$set": {
+                "current_question": next_q if status == "next" else None,
+                "question_count": new_count,
+                "status": status
+            }
+        }
+    )
+        
+    if status == "completed":
+        return {"status": "completed"}
         
     return {
         "status": "next",
         "question": next_q,
-        "question_number": session_data["question_count"]
+        "question_number": new_count
     }
 
 @app.get("/report")
 async def get_report(session_id: str = Query(...)):
-    session_path = os.path.join(SESSIONS_DIR, f"{session_id}.json")
-    if not os.path.exists(session_path):
+    session_data = sessions_col.find_one({"_id": session_id})
+    if not session_data:
         raise HTTPException(status_code=404, detail="Session not found")
-        
-    with open(session_path, "r") as f:
-        session_data = json.load(f)
         
     if not session_data.get("history"):
          raise HTTPException(status_code=400, detail="No interview history found")
@@ -179,15 +202,13 @@ import glob
 from datetime import datetime
 
 @app.get("/history")
-async def get_history():
-    sessions = []
-    session_files = glob.glob(os.path.join(SESSIONS_DIR, "*.json"))
+async def get_history(userEmail: Optional[str] = Query(None)):
+    query = {"userEmail": userEmail} if userEmail else {}
+    results = sessions_col.find(query).sort("createdAt", -1)
     
-    for sf in session_files:
+    sessions = []
+    for data in results:
         try:
-            with open(sf, "r") as f:
-                data = json.load(f)
-                
             # Compute a rough score based on history
             score = 0
             if "history" in data and data["history"]:
@@ -195,53 +216,40 @@ async def get_history():
                 score = (total / len(data["history"])) * 10 # Scale up to 100
                 
             sessions.append({
-                "_id": data.get("session_id"),
+                "_id": str(data.get("_id")),
                 "difficulty": data.get("difficulty", "Unknown").capitalize(),
                 "mode": data.get("mode", "Standard").capitalize(),
                 "score": round(score),
                 "qna": data.get("history", []),
-                "generalFeedback": getattr(data, "summary", "A comprehensive technical interview session."),
-                "createdAt": datetime.fromtimestamp(os.path.getmtime(sf)).isoformat() + "Z"
+                "generalFeedback": data.get("summary", "A comprehensive technical interview session."),
+                "createdAt": data.get("createdAt")
             })
         except Exception as e:
             continue
             
-    # Sort descending by date
-    sessions.sort(key=lambda x: x["createdAt"], reverse=True)
     return sessions
 
 @app.post("/api/resumes")
 async def save_resume(resume_data: dict):
-    # Using dict to avoid strict Pydantic validation if frontend schema varies slightly
     resume_id = str(uuid.uuid4())
-    resume_path = os.path.join(RESUMES_DIR, f"{resume_id}.json")
-    
     resume_data["_id"] = resume_id
     resume_data["updatedAt"] = datetime.now().isoformat()
     
-    with open(resume_path, "w") as f:
-        json.dump(resume_data, f)
-    
+    resumes_col.insert_one(resume_data)
     return {"status": "saved", "id": resume_id}
 
 @app.get("/api/resumes")
-async def list_resumes():
-    resumes = []
-    resume_files = glob.glob(os.path.join(RESUMES_DIR, "*.json"))
-    for rf in resume_files:
-        try:
-            with open(rf, "r") as f:
-                resumes.append(json.load(f))
-        except:
-            continue
-    resumes.sort(key=lambda x: x.get("updatedAt", ""), reverse=True)
-    return resumes
+async def list_resumes(userEmail: Optional[str] = Query(None)):
+    query = {"userEmail": userEmail} if userEmail else {}
+    results = list(resumes_col.find(query).sort("updatedAt", -1))
+    for r in results:
+        if "_id" in r: r["_id"] = str(r["_id"])
+    return results
 
 @app.delete("/api/resumes/{resume_id}")
 async def delete_resume(resume_id: str):
-    resume_path = os.path.join(RESUMES_DIR, f"{resume_id}.json")
-    if os.path.exists(resume_path):
-        os.remove(resume_path)
+    result = resumes_col.delete_one({"_id": resume_id})
+    if result.deleted_count > 0:
         return {"status": "deleted"}
     raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -255,17 +263,16 @@ async def register(user_data: dict):
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
     
-    user_file = os.path.join(USERS_DIR, f"{email}.json")
-    if os.path.exists(user_file):
+    if users_col.find_one({"email": email}):
         raise HTTPException(status_code=400, detail="User already exists")
     
     user_data["password"] = hash_password(user_data["password"])
     user_data["createdAt"] = datetime.now().isoformat()
     
-    with open(user_file, "w") as f:
-        json.dump(user_data, f)
+    users_col.insert_one(user_data)
         
     # Don't return password
+    if "_id" in user_data: del user_data["_id"] # Remove ObjectId for JSON serialization
     del user_data["password"]
     return user_data
 
@@ -274,16 +281,14 @@ async def login(credentials: dict):
     email = credentials.get("email")
     password = credentials.get("password")
     
-    user_file = os.path.join(USERS_DIR, f"{email}.json")
-    if not os.path.exists(user_file):
+    user_data = users_col.find_one({"email": email})
+    if not user_data:
         raise HTTPException(status_code=404, detail="User not found")
     
-    with open(user_file, "r") as f:
-        user_data = json.load(f)
-        
     if user_data["password"] != hash_password(password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
         
+    if "_id" in user_data: del user_data["_id"]
     del user_data["password"]
     return user_data
 

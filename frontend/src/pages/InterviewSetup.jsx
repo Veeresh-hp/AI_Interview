@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
 
 export default function InterviewSetup() {
@@ -11,6 +12,7 @@ export default function InterviewSetup() {
   const [difficulty, setDifficulty] = useState('Medium');
   const [questionsCount, setQuestionsCount] = useState(3);
   const [isUploading, setIsUploading] = useState(false);
+  const { user } = useAuth();
   
   const navigate = useNavigate();
 
@@ -26,6 +28,7 @@ export default function InterviewSetup() {
       formData.append('mode', backendMode);
       formData.append('difficulty', difficulty.toLowerCase());
       formData.append('max_questions', questionsCount);
+      if (user?.email) formData.append('userEmail', user.email);
       
       if (file) formData.append('resume', file);
       if (jd) {

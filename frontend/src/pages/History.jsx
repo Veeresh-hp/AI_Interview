@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import Sidebar from '../components/Sidebar';
 
 export default function History() {
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:8000/history')
+    if (!user?.email) return;
+    fetch(`http://localhost:8000/history?userEmail=${user.email}`)
       .then(res => res.json())
       .then(data => {
         setInterviews(data);
@@ -18,7 +21,7 @@ export default function History() {
         console.error(err);
         setLoading(false);
       });
-  }, []);
+  }, [user?.email]);
 
   const viewReport = (id) => {
     navigate('/interview/results', { state: { sessionId: id } });
