@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useResume } from '../hooks/useResume';
 import { useAuth } from '../hooks/useAuth';
