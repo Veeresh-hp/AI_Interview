@@ -12,3 +12,4 @@ tavily-python
 pymongo[srv]
 gunicorn
 langchain-text-splitters
+langchain-core
