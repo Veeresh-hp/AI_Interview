@@ -47,6 +47,7 @@ export default function App() {
               <Route path="/resume-builder" element={<ResumeBuilder />} />
               <Route path="/interview" element={<InterviewSetup />} />
               <Route path="/interview/start" element={<InterviewExperience />} />
+              <Route path="/interview/results/:sessionId" element={<InterviewResults />} />
               <Route path="/interview/results" element={<InterviewResults />} />
             </Routes>
             <ToastContainer position="bottom-right" theme="colored" />

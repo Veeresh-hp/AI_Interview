@@ -140,7 +140,7 @@ export default function InterviewExperience() {
 
       if (res.data.status === 'completed') {
         // 2. If finished, go to results
-        navigate('/interview/results', { 
+        navigate(`/interview/results/${sessionId}`, { 
           state: { 
             sessionId,
             difficulty: location.state?.difficulty || "Medium",

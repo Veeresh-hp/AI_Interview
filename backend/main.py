@@ -217,6 +217,13 @@ async def get_report(session_id: str = Query(...)):
             "summary": "Technical interview completed successfully. Detailed AI evaluation was temporarily unavailable, but your session data is saved.",
             "pros": ["Completed all questions", "Demonstrated core technical knowledge"],
             "cons": ["Detailed feedback unavailable"],
+            "skills": {
+                "Technical": 70,
+                "Communication": 70,
+                "Clarity": 70,
+                "Problem Solving": 70,
+                "Confidence": 70
+            },
             "breakdown": session_data["history"]
         }
 

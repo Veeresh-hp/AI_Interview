@@ -26,7 +26,7 @@ export default function History() {
   }, [user?.email]);
 
   const viewReport = (id) => {
-    navigate('/interview/results', { state: { sessionId: id } });
+    navigate(`/interview/results/${id}`, { state: { sessionId: id } });
   };
 
   return (

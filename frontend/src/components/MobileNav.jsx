@@ -4,7 +4,7 @@ import { Home, Play, History, User, PenTool } from 'lucide-react';
 
 export default function MobileNav() {
   const location = useLocation();
-  const { user } = useAuth();
+  useAuth();
   
   const navItems = [
     { name: 'Home', path: '/dashboard', icon: Home },

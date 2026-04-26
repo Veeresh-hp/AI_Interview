@@ -7,6 +7,9 @@ import { Download } from 'lucide-react';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer 
 } from 'recharts';
+import { useParams } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import MobileNav from '../components/MobileNav';
 
 export default function InterviewResults() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +19,7 @@ export default function InterviewResults() {
   const [chatLoading, setChatLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { sessionId: paramSessionId } = useParams();
 
   const API = '/api';
 
@@ -60,7 +64,7 @@ export default function InterviewResults() {
   };
 
   useEffect(() => {
-    const { sessionId } = location.state || {};
+    const sessionId = paramSessionId || location.state?.sessionId;
 
     const fetchResult = async () => {
       try {
@@ -101,7 +105,7 @@ export default function InterviewResults() {
     };
 
     fetchResult();
-  }, [location.state, navigate]);
+  }, [location.state, navigate, paramSessionId]);
 
 
   return (
